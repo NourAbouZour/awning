@@ -1,0 +1,229 @@
+// Awning — Prisma schema (MySQL / phpMyAdmin)
+// Mirrors src/lib/types.ts. Money is Decimal(10,2); JSON for theme sections
+// and product images. Every merchant-owned row carries storeId for tenant
+// scoping. Derived fields (ordersCount, totalSpent) are computed by query.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProductStatus {
+  active
+  draft
+}
+
+enum UserRole {
+  merchant
+  superadmin
+}
+
+enum Plan {
+  stall
+  shopfront
+  arcade
+}
+
+enum OrderStatus {
+  paid
+  fulfilled
+  shipped
+  cancelled
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         UserRole @default(merchant)
+  plan         Plan     @default(stall)
+  billingPaid  Boolean  @default(false)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  store        Store?
+}
+
+model SupportRequest {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String   @db.Text
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Store {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  slug         String   @unique
+  logoText     String
+  logoUrl      String?
+  tagline      String   @db.Text
+  contactEmail String
+  phone        String
+  address      String   @db.Text
+  hours        String
+  currency     String   @default("USD")
+  shippingNote String   @db.Text
+  createdAt    DateTime @default(now())
+
+  theme       StoreTheme?
+  categories  Category[]
+  products    Product[]
+  customers   Customer[]
+  orders      Order[]
+  messages    ContactMessage[]
+  subscribers Subscriber[]
+  campaigns   Campaign[]
+}
+
+model Subscriber {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  email     String
+  createdAt DateTime @default(now())
+
+  @@unique([storeId, email])
+}
+
+model Campaign {
+  id         String   @id @default(cuid())
+  storeId    String
+  store      Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  subject    String
+  body       String   @db.Text
+  recipients Int      @default(0)
+  sentAt     DateTime @default(now())
+}
+
+model StoreTheme {
+  id            String @id @default(cuid())
+  storeId       String @unique
+  store         Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  brandColor    String
+  fontPairing   String
+  announcement  String @db.Text
+  heroImage     String @db.Text
+  heroHeadline  String
+  heroSub       String @db.Text
+  heroCta       String
+  storyImage    String @db.Text
+  storyTitle    String
+  storyBody     String @db.Text
+  footerText    String @db.Text
+  instagram     String?
+  tiktok        String?
+  twitter       String?
+  sections      Json // ordered [{ id, enabled }]
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  storeId  String
+  store    Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name     String
+  slug     String
+  image    String    @db.Text
+  products Product[]
+
+  @@unique([storeId, slug])
+}
+
+model Product {
+  id                String           @id @default(cuid())
+  storeId           String
+  store             Store            @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  slug              String
+  title             String
+  description       String           @db.Text
+  details           String           @db.Text
+  price             Decimal          @db.Decimal(10, 2)
+  compareAt         Decimal?         @db.Decimal(10, 2)
+  categoryId        String
+  category          Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  images            Json // string[]
+  inventory         Int              @default(0)
+  sku               String
+  status            ProductStatus    @default(draft)
+  featured          Boolean          @default(false)
+  variantGroupLabel String?
+  createdAt         DateTime         @default(now())
+  variants          ProductVariant[]
+  orderItems        OrderItem[]
+
+  @@unique([storeId, slug])
+}
+
+model ProductVariant {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String
+  price     Decimal? @db.Decimal(10, 2)
+  stock     Int      @default(0)
+}
+
+model Customer {
+  id           String   @id @default(cuid())
+  storeId      String
+  store        Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name         String
+  email        String
+  location     String
+  firstOrderAt DateTime @default(now())
+  orders       Order[]
+
+  @@unique([storeId, email])
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  storeId         String
+  store           Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  number          String
+  customerId      String
+  customer        Customer    @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  customerName    String
+  customerEmail   String
+  total           Decimal     @db.Decimal(10, 2)
+  status          OrderStatus @default(paid)
+  shippingAddress String      @db.Text
+  createdAt       DateTime    @default(now())
+  items           OrderItem[]
+
+  @@unique([storeId, number])
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  title     String
+  image     String   @db.Text
+  variant   String?
+  quantity  Int
+  price     Decimal  @db.Decimal(10, 2)
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name      String
+  email     String
+  subject   String
+  body      String   @db.Text
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

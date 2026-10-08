@@ -1,0 +1,262 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ */
+/* Awning platform tokens                                              */
+/* ------------------------------------------------------------------ */
+:root {
+  /* surfaces */
+  --canvas: #faf9f5; /* canvas-cloth off-white, the platform ground */
+  --paper: #ffffff;
+  --line: #e6e4dc;
+  --line-strong: #d4d1c6;
+
+  /* ink */
+  --ink: #000000;
+  --ink-body: #2a312b; /* green-cast body ink */
+  --ink-soft: #6b7268;
+
+  /* brand */
+  --green: #114b32; /* deep awning green */
+  --green-deep: #0b3423;
+  --green-wash: #e9f0e9;
+  --green-mid: #2e7050;
+
+  /* feedback */
+  --danger: #b42318;
+  --danger-wash: #fdeceb;
+  --warn: #9a6700;
+  --warn-wash: #fcf0d5;
+  --ok: #156f3d;
+  --ok-wash: #e4f3e9;
+
+  /* storefront theme defaults (overridden per store via inline style) */
+  --sf-brand: #114b32;
+  --sf-on-brand: #ffffff;
+  --sf-brand-hover: #0d3c28;
+  --sf-wash: #eef2ee;
+  --sf-bg: #ffffff;
+  --sf-ink: #101210;
+  --sf-muted: #6a6f6a;
+  --sf-line: #e8e8e4;
+  --sf-display: var(--font-fraunces), Georgia, serif;
+  --sf-body: var(--font-inter), system-ui, sans-serif;
+  --sf-display-weight: 500;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-paper: var(--paper);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-body: var(--ink-body);
+  --color-ink-soft: var(--ink-soft);
+  --color-green: var(--green);
+  --color-green-deep: var(--green-deep);
+  --color-green-wash: var(--green-wash);
+  --color-green-mid: var(--green-mid);
+  --color-danger: var(--danger);
+  --color-danger-wash: var(--danger-wash);
+  --color-warn: var(--warn);
+  --color-warn-wash: var(--warn-wash);
+  --color-ok: var(--ok);
+  --color-ok-wash: var(--ok-wash);
+
+  --color-sf-brand: var(--sf-brand);
+  --color-sf-on-brand: var(--sf-on-brand);
+  --color-sf-brand-hover: var(--sf-brand-hover);
+  --color-sf-wash: var(--sf-wash);
+  --color-sf-bg: var(--sf-bg);
+  --color-sf-ink: var(--sf-ink);
+  --color-sf-muted: var(--sf-muted);
+  --color-sf-line: var(--sf-line);
+
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-bricolage), system-ui, sans-serif;
+  --font-sf-display: var(--sf-display);
+  --font-sf-body: var(--sf-body);
+
+  --animate-fade-up: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade-in: fade-in 0.5s ease both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-marquee: marquee 28s linear infinite;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-bottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Base                                                                */
+/* ------------------------------------------------------------------ */
+body {
+  background: var(--canvas);
+  color: var(--ink-body);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--green);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.storefront :focus-visible {
+  outline-color: var(--sf-brand);
+}
+
+/* ------------------------------------------------------------------ */
+/* Awning brand devices                                                */
+/* ------------------------------------------------------------------ */
+
+/* Scalloped awning hem — half-circles hanging from the element above.
+   Color the element with any bg; the mask cuts the scallops. */
+.scallop {
+  height: 12px;
+  mask: radial-gradient(12px at 50% 0, #000 97%, transparent 100%) 50% 0 / 24px
+    12px repeat-x;
+  -webkit-mask: radial-gradient(12px at 50% 0, #000 97%, transparent 100%) 50%
+    0 / 24px 12px repeat-x;
+}
+
+/* Awning canvas stripes */
+.awning-stripes {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--green) 0 26px,
+    var(--canvas) 26px 52px
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Helpers                                                             */
+/* ------------------------------------------------------------------ */
+.skeleton {
+  background: linear-gradient(
+    100deg,
+    rgb(0 0 0 / 0.045) 40%,
+    rgb(0 0 0 / 0.09) 50%,
+    rgb(0 0 0 / 0.045) 60%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* hide scrollbars on horizontal carousels without killing scroll */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Storefront type defaults */
+.storefront {
+  background: var(--sf-bg);
+  color: var(--sf-ink);
+  font-family: var(--sf-body);
+}
+.storefront h1,
+.storefront h2,
+.storefront h3,
+.sf-display {
+  font-family: var(--sf-display);
+  font-weight: var(--sf-display-weight);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
