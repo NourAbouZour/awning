@@ -55,15 +55,19 @@ export async function POST(request: Request) {
   const name = `${randomUUID()}.${ext}`;
 
   // On Vercel (and any host with Blob configured) the filesystem is
-  // read-only, so persist to Vercel Blob. Locally, with no token, fall back
-  // to writing under public/uploads so `next dev` works with zero setup.
-  const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
-  if (blobToken) {
+  // read-only, so persist to Vercel Blob. A connected Blob store exposes
+  // BLOB_STORE_ID and authenticates via the runtime's Vercel OIDC token;
+  // outside Vercel a BLOB_READ_WRITE_TOKEN is used instead. The SDK resolves
+  // whichever is available, so we don't pass a token explicitly. With neither
+  // present (plain local dev) we fall back to writing under public/uploads.
+  const blobConfigured = Boolean(
+    process.env.BLOB_STORE_ID || process.env.BLOB_READ_WRITE_TOKEN,
+  );
+  if (blobConfigured) {
     try {
       const blob = await put(`products/${name}`, bytes, {
         access: "public",
         contentType: file.type,
-        token: blobToken,
       });
       return NextResponse.json({ url: blob.url });
     } catch (err) {
