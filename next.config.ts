@@ -2,10 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "images.unsplash.com" },
-      { protocol: "https", hostname: "plus.unsplash.com" },
-    ],
+    // Merchants paste image URLs from any host and we store product photos
+    // on Vercel Blob (*.public.blob.vercel-storage.com), so allow any https
+    // image source. Locally-uploaded files are served same-origin from
+    // /api/uploads and need no pattern.
+    remotePatterns: [{ protocol: "https", hostname: "**" }],
   },
 };
 
