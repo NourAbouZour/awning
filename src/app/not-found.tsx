@@ -19,7 +19,7 @@ export default function NotFound() {
       </h1>
       <p className="mt-3 max-w-sm text-ink-soft">
         The address may have changed, or the shop that lived here has moved on.
-        Nothing is lost — your bag and account are safe.
+        Nothing is lost, your bag and account are safe.
       </p>
       <div className="mt-8 flex gap-3">
         <Button asChild>

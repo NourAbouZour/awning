@@ -5,7 +5,7 @@ import { FREE_PRODUCT_LIMIT, PLAN_LABELS, type Plan } from "@/lib/plan";
 /**
  * Slim informational bar across the dashboard. Stall accounts see the
  * free-trial countdown; paid plans see their plan + payment status. No real
- * billing — the owner confirms payment from the admin panel.
+ * billing, the owner confirms payment from the admin panel.
  */
 export function TrialBar({
   daysLeft,
@@ -24,7 +24,7 @@ export function TrialBar({
         <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 bg-green-wash px-4 py-2 text-center text-[13px] text-green">
           <BadgeCheck className="size-3.5" aria-hidden />
           <span className="font-medium">
-            {PLAN_LABELS[plan]} plan — active
+            {PLAN_LABELS[plan]} plan, active
           </span>
           <span className="text-green/70">· unlimited products</span>
         </div>
@@ -34,7 +34,7 @@ export function TrialBar({
       <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 bg-warn-wash px-4 py-2 text-center text-[13px] text-warn">
         <CreditCard className="size-3.5" aria-hidden />
         <span className="font-medium">
-          {PLAN_LABELS[plan]} plan — payment pending
+          {PLAN_LABELS[plan]} plan, payment pending
         </span>
         <span className="text-warn/80">
           We&apos;ll be in touch to arrange it. Your store stays live
@@ -49,7 +49,7 @@ export function TrialBar({
       <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 bg-green-wash px-4 py-2 text-center text-[13px] text-green">
         <PartyPopper className="size-3.5" aria-hidden />
         <span className="font-medium">
-          Free trial — {daysLeft} {daysLeft === 1 ? "day" : "days"} left
+          Free trial, {daysLeft} {daysLeft === 1 ? "day" : "days"} left
         </span>
         <span className="text-green/70">
           · Free plan includes up to {FREE_PRODUCT_LIMIT} products

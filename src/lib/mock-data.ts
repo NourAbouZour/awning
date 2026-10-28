@@ -12,12 +12,12 @@ import type {
   Store,
 } from "@/lib/types";
 
-/** Unsplash helper — stable CDN URLs, resized server-side. */
+/** Unsplash helper, stable CDN URLs, resized server-side. */
 const u = (id: string, w = 1400) =>
   `https://images.unsplash.com/${id}?q=80&w=${w}&auto=format&fit=crop`;
 
 /* ------------------------------------------------------------------ */
-/* VOLTA — sneakers & streetwear                                       */
+/* VOLTA, sneakers & streetwear                                       */
 /* ------------------------------------------------------------------ */
 
 export const voltaStore: Store = {
@@ -35,7 +35,7 @@ export const voltaStore: Store = {
   theme: {
     brandColor: "#f54a00",
     fontPairing: "bold",
-    announcement: "Free shipping over $75 — new drops every Friday",
+    announcement: "Free shipping over $75, new drops every Friday",
     heroImage: u("photo-1556906781-9a412961c28c", 2400),
     heroHeadline: "Built to move. Made to last.",
     heroSub: "Performance sneakers and streetwear, designed in San Francisco and worn everywhere.",
@@ -68,7 +68,7 @@ export const voltaStore: Store = {
     {
       id: "p_volta_01",
       slug: "circuit-runner-ember",
-      title: "Circuit Runner — Ember",
+      title: "Circuit Runner, Ember",
       description:
         "Our flagship daily trainer. A nitrogen-infused midsole returns 78% of every stride, while the engineered-knit upper breathes through city summers. The Ember colorway is dyed in small batches, so no two pairs match exactly.",
       details: "",
@@ -95,7 +95,7 @@ export const voltaStore: Store = {
     {
       id: "p_volta_02",
       slug: "court-classic-white",
-      title: "Court Classic — White",
+      title: "Court Classic, White",
       description:
         "A tennis silhouette stripped to its essentials. Full-grain leather that scuffs beautifully, a gum cupsole, and nothing else. The shoe you reach for when you don't want to think about shoes.",
       details: "",
@@ -120,7 +120,7 @@ export const voltaStore: Store = {
     {
       id: "p_volta_03",
       slug: "apex-trail-storm",
-      title: "Apex Trail — Storm",
+      title: "Apex Trail, Storm",
       description:
         "Trail grip meets street geometry. A Vibram-style lug outsole handles mud and scree; the ripstop upper shrugs off weather. Tested on 400 miles of Marin headlands before release.",
       details: "",
@@ -145,7 +145,7 @@ export const voltaStore: Store = {
     {
       id: "p_volta_04",
       slug: "midnight-runner-black",
-      title: "Midnight Runner — Black",
+      title: "Midnight Runner, Black",
       description:
         "The Circuit Runner platform in full blackout, with 360° reflective threads woven through the knit. Invisible at noon, unmissable in headlights.",
       details: "",
@@ -169,7 +169,7 @@ export const voltaStore: Store = {
     {
       id: "p_volta_05",
       slug: "volt-high-citrus",
-      title: "Volt High — Citrus",
+      title: "Volt High, Citrus",
       description:
         "A high-top that refuses to whisper. Citrus-yellow suede, oversized tongue, double-stacked foam. Limited to 500 pairs per run.",
       details: "",
@@ -193,7 +193,7 @@ export const voltaStore: Store = {
     {
       id: "p_volta_06",
       slug: "aurora-low-rose",
-      title: "Aurora Low — Rose",
+      title: "Aurora Low, Rose",
       description:
         "Soft rose nubuck on the Court Classic last. Understated until the light hits the pearlescent heel tab.",
       details: "",
@@ -217,7 +217,7 @@ export const voltaStore: Store = {
     {
       id: "p_volta_07",
       slug: "relay-slip-on-grey",
-      title: "Relay Slip-On — Grey",
+      title: "Relay Slip-On, Grey",
       description:
         "Zero laces, zero friction. Heel-collapse construction means you can step in hands-free and still sprint for the train.",
       details: "",
@@ -232,7 +232,7 @@ export const voltaStore: Store = {
     {
       id: "p_volta_08",
       slug: "heavyweight-hoodie-ash",
-      title: "Heavyweight Hoodie — Ash",
+      title: "Heavyweight Hoodie, Ash",
       description:
         "480gsm French terry, garment-dyed and enzyme-washed. The hood actually stays up. Pre-shrunk so the fit you buy is the fit you keep.",
       details: "",
@@ -257,7 +257,7 @@ export const voltaStore: Store = {
     {
       id: "p_volta_09",
       slug: "everyday-tee-cloud",
-      title: "Everyday Tee — Cloud",
+      title: "Everyday Tee, Cloud",
       description:
         "Supima cotton with a touch of stretch. Cut longer in the back, tagless, and dyed with a white that stays white.",
       details: "",
@@ -281,7 +281,7 @@ export const voltaStore: Store = {
     {
       id: "p_volta_10",
       slug: "track-cap-black",
-      title: "Track Cap — Black",
+      title: "Track Cap, Black",
       description:
         "Five panels, brushed cotton, and an adjustable strap that doesn't dig. Embroidered bolt on the side, nothing on the front.",
       details: "",
@@ -312,7 +312,7 @@ export const voltaStore: Store = {
     {
       id: "p_volta_12",
       slug: "studio-sock-3-pack",
-      title: "Studio Sock — 3-Pack",
+      title: "Studio Sock, 3-Pack",
       description:
         "Cushioned where you land, mesh where you sweat. Three pairs: ember, black, cloud.",
       details: "",
@@ -343,7 +343,7 @@ export const voltaStore: Store = {
 };
 
 /* ------------------------------------------------------------------ */
-/* ODE — skincare                                                      */
+/* ODE, skincare                                                      */
 /* ------------------------------------------------------------------ */
 
 export const odeStore: Store = {
@@ -364,13 +364,13 @@ export const odeStore: Store = {
     announcement: "Complimentary shipping on orders over $50",
     heroImage: u("photo-1556228453-efd6c1ff04f6", 2400),
     heroHeadline: "Three steps. Nothing you don't need.",
-    heroSub: "Clinically-dosed botanicals in exactly the amounts your skin can use — made fresh monthly in Portland.",
+    heroSub: "Clinically-dosed botanicals in exactly the amounts your skin can use, made fresh monthly in Portland.",
     heroCta: "Shop rituals",
     collectionsTitle: "Shop by collection",
     storyImage: u("photo-1616394584738-fc6e612e71b9", 1800),
     storyTitle: "Formulated by a chemist who got tired of 12-step routines",
     storyBody:
-      "ODE exists because our founder, a cosmetic chemist for fifteen years, kept watching brands add steps instead of results. We make eight products, total. Each one is made in small monthly batches, dated like good food, and dosed at clinical levels — because an ingredient list is a promise, not a mood board.",
+      "ODE exists because our founder, a cosmetic chemist for fifteen years, kept watching brands add steps instead of results. We make eight products, total. Each one is made in small monthly batches, dated like good food, and dosed at clinical levels, because an ingredient list is a promise, not a mood board.",
     newsletterTitle: "Be first to every drop",
     newsletterBody:
       "Join the ODE list for new releases and restocks. One or two emails a month, never more.",
@@ -396,7 +396,7 @@ export const odeStore: Store = {
       slug: "morning-oat-cleanser",
       title: "Morning Oat Cleanser",
       description:
-        "A pH-balanced gel that cleans without the squeak. Colloidal oat calms, glycerin holds water in, and the whole thing rinses in one pass. Your face, minus the day — nothing else removed.",
+        "A pH-balanced gel that cleans without the squeak. Colloidal oat calms, glycerin holds water in, and the whole thing rinses in one pass. Your face, minus the day, nothing else removed.",
       details: "",
       price: 28,
       images: [u("photo-1556228720-195a672e8a03"), u("photo-1608248543803-ba4f8c70ae0b")],
@@ -419,7 +419,7 @@ export const odeStore: Store = {
       slug: "number-four-serum",
       title: "№4 Barrier Serum",
       description:
-        "Our bestseller. 5% niacinamide, ceramides in the ratio skin actually uses, and zero fragrance. Eight weeks of daily use measurably thickens the moisture barrier — we ran the study twice to be sure.",
+        "Our bestseller. 5% niacinamide, ceramides in the ratio skin actually uses, and zero fragrance. Eight weeks of daily use measurably thickens the moisture barrier, we ran the study twice to be sure.",
       details: "",
       price: 52,
       compareAt: 62,
@@ -464,7 +464,7 @@ export const odeStore: Store = {
     {
       id: "p_ode_04",
       slug: "quiet-retinal-night",
-      title: "Quiet Retinal — Night",
+      title: "Quiet Retinal, Night",
       description:
         "0.1% retinaldehyde buffered in squalane, for results without the flaking chapter. Start twice a week; your future self will write you a thank-you note.",
       details: "",
@@ -528,7 +528,7 @@ export const odeStore: Store = {
       slug: "daily-veil-spf",
       title: "Daily Veil SPF 40",
       description:
-        "A mineral-hybrid sunscreen with no cast on any skin tone — we checked on forty volunteers, not four. Doubles as a gripping primer.",
+        "A mineral-hybrid sunscreen with no cast on any skin tone, we checked on forty volunteers, not four. Doubles as a gripping primer.",
       details: "",
       price: 38,
       images: [u("photo-1556760544-74068565f05c"), u("photo-1570554886111-e80fcca6a029")],
@@ -611,7 +611,7 @@ export const odeStore: Store = {
       slug: "vitamin-c-morning",
       title: "Bright Morning Vitamin C",
       description:
-        "15% ethylated ascorbic acid — the stable kind. In testing now, launching next season.",
+        "15% ethylated ascorbic acid, the stable kind. In testing now, launching next season.",
       details: "",
       price: 58,
       images: [u("photo-1620916566398-39f1143ab7be")],
@@ -653,27 +653,27 @@ const img = (id: string) => u(id, 300);
 export const orders: Order[] = [
   {
     id: "o_1042", number: "#1042", customerId: "c_04", customerName: "Jordan Park", customerEmail: "jordan.park@gmail.com",
-    items: [{ productId: "p_volta_01", title: "Circuit Runner — Ember", image: img("photo-1542291026-7eec264c27ff"), variant: "US 10", quantity: 1, price: 148 }],
+    items: [{ productId: "p_volta_01", title: "Circuit Runner, Ember", image: img("photo-1542291026-7eec264c27ff"), variant: "US 10", quantity: 1, price: 148 }],
     total: 148, status: "paid", createdAt: "2026-10-06T08:42:00Z", shippingAddress: "1510 N Damen Ave, Chicago, IL 60622",
   },
   {
     id: "o_1041", number: "#1041", customerId: "c_03", customerName: "Sofia Lindqvist", customerEmail: "sofia.lq@proton.me",
     items: [
-      { productId: "p_volta_08", title: "Heavyweight Hoodie — Ash", image: img("photo-1556821840-3a63f95609a7"), variant: "M", quantity: 1, price: 88 },
-      { productId: "p_volta_12", title: "Studio Sock — 3-Pack", image: img("photo-1586350977771-b3b0abd50c82"), quantity: 2, price: 24 },
+      { productId: "p_volta_08", title: "Heavyweight Hoodie, Ash", image: img("photo-1556821840-3a63f95609a7"), variant: "M", quantity: 1, price: 88 },
+      { productId: "p_volta_12", title: "Studio Sock, 3-Pack", image: img("photo-1586350977771-b3b0abd50c82"), quantity: 2, price: 24 },
     ],
     total: 136, status: "paid", createdAt: "2026-10-05T19:15:00Z", shippingAddress: "4021 Stone Way N, Seattle, WA 98103",
   },
   {
     id: "o_1040", number: "#1040", customerId: "c_01", customerName: "Maya Okafor", customerEmail: "maya.okafor@gmail.com",
-    items: [{ productId: "p_volta_05", title: "Volt High — Citrus", image: img("photo-1560769629-975ec94e6a86"), variant: "US 9", quantity: 1, price: 172 }],
+    items: [{ productId: "p_volta_05", title: "Volt High, Citrus", image: img("photo-1560769629-975ec94e6a86"), variant: "US 9", quantity: 1, price: 172 }],
     total: 172, status: "fulfilled", createdAt: "2026-10-05T11:03:00Z", shippingAddress: "233 Greene Ave, Brooklyn, NY 11238",
   },
   {
     id: "o_1039", number: "#1039", customerId: "c_07", customerName: "Priya Natarajan", customerEmail: "priya.nat@gmail.com",
     items: [
-      { productId: "p_volta_02", title: "Court Classic — White", image: img("photo-1595950653106-6c9ebd614d3a"), variant: "US 8", quantity: 1, price: 118 },
-      { productId: "p_volta_09", title: "Everyday Tee — Cloud", image: img("photo-1521572163474-6864f9cf17ab"), variant: "M", quantity: 2, price: 38 },
+      { productId: "p_volta_02", title: "Court Classic, White", image: img("photo-1595950653106-6c9ebd614d3a"), variant: "US 8", quantity: 1, price: 118 },
+      { productId: "p_volta_09", title: "Everyday Tee, Cloud", image: img("photo-1521572163474-6864f9cf17ab"), variant: "M", quantity: 2, price: 38 },
     ],
     total: 194, status: "shipped", createdAt: "2026-10-04T16:48:00Z", shippingAddress: "88 S 4th St, San Jose, CA 95112",
   },
@@ -684,32 +684,32 @@ export const orders: Order[] = [
   },
   {
     id: "o_1037", number: "#1037", customerId: "c_08", customerName: "Liam Gallagher", customerEmail: "liam.g.main@icloud.com",
-    items: [{ productId: "p_volta_08", title: "Heavyweight Hoodie — Ash", image: img("photo-1556821840-3a63f95609a7"), variant: "L", quantity: 1, price: 88 }],
+    items: [{ productId: "p_volta_08", title: "Heavyweight Hoodie, Ash", image: img("photo-1556821840-3a63f95609a7"), variant: "L", quantity: 1, price: 88 }],
     total: 88, status: "fulfilled", createdAt: "2026-10-02T14:12:00Z", shippingAddress: "2134 SE Division St, Portland, OR 97202",
   },
   {
     id: "o_1036", number: "#1036", customerId: "c_02", customerName: "Daniel Reyes", customerEmail: "dreyes91@outlook.com",
     items: [
-      { productId: "p_volta_03", title: "Apex Trail — Storm", image: img("photo-1606107557195-0e29a4b5b4aa"), variant: "US 11", quantity: 1, price: 164 },
-      { productId: "p_volta_10", title: "Track Cap — Black", image: img("photo-1588850561407-ed78c282e89b"), quantity: 1, price: 32 },
+      { productId: "p_volta_03", title: "Apex Trail, Storm", image: img("photo-1606107557195-0e29a4b5b4aa"), variant: "US 11", quantity: 1, price: 164 },
+      { productId: "p_volta_10", title: "Track Cap, Black", image: img("photo-1588850561407-ed78c282e89b"), quantity: 1, price: 32 },
     ],
     total: 196, status: "shipped", createdAt: "2026-10-01T20:55:00Z", shippingAddress: "1804 E 6th St, Austin, TX 78702",
   },
   {
     id: "o_1035", number: "#1035", customerId: "c_06", customerName: "Tom Becker", customerEmail: "t.becker@gmx.de",
-    items: [{ productId: "p_volta_04", title: "Midnight Runner — Black", image: img("photo-1512374382149-233c42b6a83b"), variant: "US 11", quantity: 1, price: 152 }],
+    items: [{ productId: "p_volta_04", title: "Midnight Runner, Black", image: img("photo-1512374382149-233c42b6a83b"), variant: "US 11", quantity: 1, price: 152 }],
     total: 152, status: "cancelled", createdAt: "2026-09-30T10:31:00Z", shippingAddress: "950 Lincoln St, Denver, CO 80203",
   },
   {
     id: "o_1034", number: "#1034", customerId: "c_03", customerName: "Sofia Lindqvist", customerEmail: "sofia.lq@proton.me",
-    items: [{ productId: "p_volta_01", title: "Circuit Runner — Ember", image: img("photo-1542291026-7eec264c27ff"), variant: "US 8", quantity: 1, price: 148 }],
+    items: [{ productId: "p_volta_01", title: "Circuit Runner, Ember", image: img("photo-1542291026-7eec264c27ff"), variant: "US 8", quantity: 1, price: 148 }],
     total: 148, status: "fulfilled", createdAt: "2026-09-29T13:08:00Z", shippingAddress: "4021 Stone Way N, Seattle, WA 98103",
   },
   {
     id: "o_1033", number: "#1033", customerId: "c_01", customerName: "Maya Okafor", customerEmail: "maya.okafor@gmail.com",
     items: [
-      { productId: "p_volta_06", title: "Aurora Low — Rose", image: img("photo-1603808033192-082d6919d3e1"), variant: "US 7", quantity: 1, price: 126 },
-      { productId: "p_volta_12", title: "Studio Sock — 3-Pack", image: img("photo-1586350977771-b3b0abd50c82"), quantity: 1, price: 24 },
+      { productId: "p_volta_06", title: "Aurora Low, Rose", image: img("photo-1603808033192-082d6919d3e1"), variant: "US 7", quantity: 1, price: 126 },
+      { productId: "p_volta_12", title: "Studio Sock, 3-Pack", image: img("photo-1586350977771-b3b0abd50c82"), quantity: 1, price: 24 },
     ],
     total: 150, status: "fulfilled", createdAt: "2026-09-28T17:40:00Z", shippingAddress: "233 Greene Ave, Brooklyn, NY 11238",
   },
@@ -718,17 +718,17 @@ export const orders: Order[] = [
 export const messages: ContactMessage[] = [
   {
     id: "m_01", name: "Jordan Park", email: "jordan.park@gmail.com", subject: "Sizing question on the Circuit Runner",
-    body: "Hey! I'm usually a 9.5 in most brands — do the Circuit Runners run big or small? Debating between the 9 and the 10 before my order ships. Thanks!",
+    body: "Hey! I'm usually a 9.5 in most brands, do the Circuit Runners run big or small? Debating between the 9 and the 10 before my order ships. Thanks!",
     createdAt: "2026-10-06T07:58:00Z", read: false,
   },
   {
     id: "m_02", name: "Renata Silva", email: "renata.silva.photo@gmail.com", subject: "Wholesale inquiry",
-    body: "Hi VOLTA team — I run a boutique in Miami's Design District and we'd love to stock the Court Classic line. Could you send over your wholesale terms?",
+    body: "Hi VOLTA team, I run a boutique in Miami's Design District and we'd love to stock the Court Classic line. Could you send over your wholesale terms?",
     createdAt: "2026-10-05T15:22:00Z", read: false,
   },
   {
     id: "m_03", name: "Tom Becker", email: "t.becker@gmx.de", subject: "Cancelled order refund timing",
-    body: "I cancelled order #1035 yesterday — just checking how long the refund takes to land back on my card. No rush, just want to make sure it went through.",
+    body: "I cancelled order #1035 yesterday, just checking how long the refund takes to land back on my card. No rush, just want to make sure it went through.",
     createdAt: "2026-10-01T09:14:00Z", read: true,
   },
   {

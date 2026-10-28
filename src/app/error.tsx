@@ -16,7 +16,7 @@ export default function GlobalError({
         Something went wrong on our side
       </h1>
       <p className="mt-3 max-w-sm text-ink-soft">
-        Not you — us. The error has been noted. Trying again usually fixes it.
+        Not you, us. The error has been noted. Trying again usually fixes it.
       </p>
       <div className="mt-8">
         <Button onClick={reset}>Try again</Button>

@@ -31,7 +31,7 @@ export async function login(
     return { error: "Email or password is incorrect." };
   }
   if (!user.active) {
-    return { error: "Your account is suspended — please contact support." };
+    return { error: "Your account is suspended, please contact support." };
   }
 
   await createSession(user.id);
@@ -48,7 +48,7 @@ export async function signup(
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
 
-  if (name.length < 2) return { error: "Tell us your name — 2+ characters." };
+  if (name.length < 2) return { error: "Tell us your name, 2+ characters." };
   if (!EMAIL_RE.test(email))
     return { error: "That doesn't look like an email address." };
   if (password.length < 8)

@@ -36,7 +36,7 @@ export function SiteFooter() {
             <AwningLogo />
             <p className="mt-4 text-sm leading-relaxed text-ink-soft">
               The simplest way to put your shop on the internet. Your products,
-              your brand, your customers — live in minutes.
+              your brand, your customers, live in minutes.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-10 sm:grid-cols-3">

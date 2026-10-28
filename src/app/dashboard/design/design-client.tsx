@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Store design editor — every control patches a local theme draft and the
+ * Store design editor, every control patches a local theme draft and the
  * preview re-renders live. "Publish" persists the draft via a server action.
  */
 import * as React from "react";
@@ -97,7 +97,7 @@ export function DesignClient({ initialStore }: { initialStore: Store }) {
       });
       setSaving(false);
       if (res.error) toast.error(res.error);
-      else toast.success("Design published — your storefront is updated");
+      else toast.success("Design published, your storefront is updated");
     });
   }
 
@@ -455,7 +455,7 @@ export function DesignClient({ initialStore }: { initialStore: Store }) {
                 className="size-1.5 animate-pulse rounded-full bg-ok"
                 aria-hidden
               />
-              Live preview — scroll to see the whole homepage
+              Live preview, scroll to see the whole homepage
             </p>
             <BrowserFrame url={`${draft.slug}.shopleb.shop`}>
               <div className="max-h-[72vh] overflow-y-auto">

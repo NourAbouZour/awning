@@ -107,7 +107,7 @@ export async function deleteCategory(
     if (!fallback) {
       return {
         error:
-          "This is your only collection — create another before deleting it.",
+          "This is your only collection, create another before deleting it.",
       };
     }
     await prisma.product.updateMany({

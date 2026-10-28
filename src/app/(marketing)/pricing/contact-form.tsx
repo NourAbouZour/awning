@@ -50,7 +50,7 @@ export function PricingContactForm() {
           Message sent
         </p>
         <p className="mt-2 max-w-sm text-sm text-ink-soft">
-          Thanks, {values.name.split(" ")[0] || "there"} — we&apos;ll get back
+          Thanks, {values.name.split(" ")[0] || "there"}, we&apos;ll get back
           to you by email soon.
         </p>
       </div>

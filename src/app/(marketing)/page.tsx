@@ -24,9 +24,9 @@ import { Reveal, Stagger, StaggerItem } from "@/components/ui/motion";
 import type { Store } from "@/lib/types";
 
 export const metadata: Metadata = {
-  title: "Shopleb — Put up your shop",
+  title: "Shopleb · Put up your shop",
   description:
-    "Shopleb gives anyone a beautiful online store in minutes. Add products, pick your look, and start selling — no code, no designer, no headache.",
+    "Shopleb gives anyone a beautiful online store in minutes. Add products, pick your look, and start selling, no code, no designer, no headache.",
 };
 
 // Reads live stores from the database for the example previews.
@@ -72,7 +72,7 @@ function Hero({ stores }: { stores: Store[] }) {
           </h1>
           <p className="mt-5 max-w-md text-lg leading-relaxed text-ink-body">
             The simplest way to open a real online store. Add your products,
-            pick your look, and you&apos;re selling — usually before your
+            pick your look, and you&apos;re selling, usually before your
             coffee goes cold.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -135,7 +135,7 @@ function ExampleStores({ stores }: { stores: Store[] }) {
           <p className="mt-4 text-lg leading-relaxed text-ink-body">
             Every Shopleb store runs the same carefully-built storefront. Your
             logo, colors, type, and photos make it unmistakably yours. These
-            are live — click through and poke around.
+            are live, click through and poke around.
           </p>
         </div>
         <Stagger className="mt-12 grid gap-8 md:grid-cols-2">
@@ -192,7 +192,7 @@ const features = [
   {
     icon: Palette,
     title: "Your brand, everywhere, automatically",
-    body: "Pick a color and a font pairing once. Buttons, badges, and headings follow it across your whole store — with text contrast handled for you.",
+    body: "Pick a color and a font pairing once. Buttons, badges, and headings follow it across your whole store, with text contrast handled for you.",
     vignette: <BrandVignette />,
   },
   {
@@ -216,7 +216,7 @@ const features = [
   {
     icon: Inbox,
     title: "Orders, customers, and messages in one inbox",
-    body: "See who bought, what shipped, and who's asking about sizing — without opening five tabs.",
+    body: "See who bought, what shipped, and who's asking about sizing, without opening five tabs.",
     vignette: <InboxVignette />,
   },
   {
@@ -265,7 +265,7 @@ function Features() {
   );
 }
 
-/* little hand-drawn UI vignettes — real pixels, not stock icons */
+/* little hand-drawn UI vignettes, real pixels, not stock icons */
 
 function BrandVignette() {
   return (
@@ -328,7 +328,7 @@ function CheckoutVignette() {
   return (
     <div className="w-full max-w-[220px] rounded-xl border border-line bg-paper p-3.5 shadow-sm" aria-hidden>
       <div className="flex justify-between text-xs text-ink-soft">
-        <span>Court Classic — US 9</span>
+        <span>Court Classic, US 9</span>
         <span className="font-medium text-ink">$118</span>
       </div>
       <div className="mt-2 flex justify-between text-xs text-ink-soft">
@@ -407,7 +407,7 @@ function ChartVignette() {
 const steps = [
   {
     title: "Name your store",
-    body: "Type a name, get your own address like yourshop.shopleb.shop — checked live.",
+    body: "Type a name, get your own address like yourshop.shopleb.shop, checked live.",
   },
   {
     title: "Make it yours",
@@ -526,7 +526,7 @@ function PricingStrip() {
           </h2>
           <p className="mt-2 text-ink-body">
             Every plan includes the full storefront, checkout, and dashboard.
-            No per-sale fees — just a flat monthly subscription, and your first
+            No per-sale fees, just a flat monthly subscription, and your first
             month is free.
           </p>
         </div>
@@ -550,7 +550,7 @@ const faqs = [
   },
   {
     q: "How do I get paid?",
-    a: "You connect your own Stripe account during setup (it takes a couple of minutes). Customers pay by card at checkout and the money goes directly to you — Shopleb never holds your funds.",
+    a: "You connect your own Stripe account during setup (it takes a couple of minutes). Customers pay by card at checkout and the money goes directly to you, Shopleb never holds your funds.",
   },
   {
     q: "Can I use my own domain name?",
@@ -558,11 +558,11 @@ const faqs = [
   },
   {
     q: "What does it cost to start?",
-    a: "Nothing. Building your store, adding products, and publishing it are free, and your first month is free too. After that it's one simple monthly subscription — no per-sale fees. See the pricing page for the exact numbers.",
+    a: "Nothing. Building your store, adding products, and publishing it are free, and your first month is free too. After that it's one simple monthly subscription, no per-sale fees. See the pricing page for the exact numbers.",
   },
   {
     q: "Can I move my store somewhere else later?",
-    a: "Yes. Your products, customers, and orders are yours — export them as CSV any time, no lock-in, no exit fee.",
+    a: "Yes. Your products, customers, and orders are yours, export them as CSV any time, no lock-in, no exit fee.",
   },
 ];
 
@@ -582,7 +582,7 @@ function Faq() {
             >
               Write to us
             </a>{" "}
-            — a human replies.
+            and a human replies.
           </p>
         </div>
         <Accordion type="single" collapsible className="w-full">
@@ -615,7 +615,7 @@ function FinalCta() {
           The internet has room for one more great shop.
         </h2>
         <p className="mx-auto mt-5 max-w-xl text-lg text-white/80">
-          Yours. Open it tonight — it&apos;s free to start and takes about five
+          Yours. Open it tonight, it&apos;s free to start and takes about five
           minutes.
         </p>
         <div className="mt-9 flex justify-center">

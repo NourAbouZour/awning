@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Polished empty state used across the dashboard. The "illustration" is a
- * drawn-in-CSS awning over a counter — on brand, no image assets needed.
+ * drawn-in-CSS awning over a counter, on brand, no image assets needed.
  */
 export function EmptyState({
   icon,

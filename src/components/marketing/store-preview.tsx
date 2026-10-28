@@ -5,7 +5,7 @@ import type { Store } from "@/lib/types";
 import { ShoppingBag } from "lucide-react";
 
 /**
- * A miniature, non-interactive render of a store's homepage — the same theme
+ * A miniature, non-interactive render of a store's homepage, the same theme
  * variables the real storefront uses, scaled down. Renders the full page
  * (hero, collections, products, story, newsletter, footer) so the design
  * editor and onboarding previews show everything, not just the top.

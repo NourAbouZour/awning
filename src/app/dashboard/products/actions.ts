@@ -7,7 +7,7 @@ import { prisma } from "@/lib/db";
 import { requireCurrentStore, getCurrentUser } from "@/lib/auth";
 import { limitReached, FREE_PRODUCT_LIMIT, type Plan } from "@/lib/plan";
 
-const LIMIT_MESSAGE = `You've reached ${FREE_PRODUCT_LIMIT} products on the free plan — upgrade to add more.`;
+const LIMIT_MESSAGE = `You've reached ${FREE_PRODUCT_LIMIT} products on the free plan, upgrade to add more.`;
 
 async function currentPlan(): Promise<Plan> {
   const user = await getCurrentUser();

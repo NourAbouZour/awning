@@ -188,7 +188,7 @@ function Trust({ store }: { store: Store }) {
     {
       icon: RefreshCcw,
       title: "Easy returns",
-      body: "Changed your mind? Send it back — no forms, no fuss.",
+      body: "Changed your mind? Send it back, no forms, no fuss.",
     },
     {
       icon: Lock,

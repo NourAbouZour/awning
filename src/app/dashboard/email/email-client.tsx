@@ -55,7 +55,7 @@ export function EmailClient({
         <div className="mb-5 rounded-xl border border-warn/30 bg-warn-wash px-4 py-3 text-sm text-warn">
           Email sending isn&apos;t set up on this server yet. Campaigns will send
           for real once SMTP credentials (SMTP_HOST, SMTP_USER, SMTP_PASS,
-          EMAIL_FROM) are configured — your Hostinger email provides these.
+          EMAIL_FROM) are configured, your Hostinger email provides these.
           Subscribers are still being collected in the meantime.
         </div>
       )}
@@ -83,7 +83,7 @@ export function EmailClient({
               rows={8}
               value={body}
               onChange={(e) => setBody(e.target.value)}
-              placeholder="Hi there — we just added some new pieces we think you'll love…"
+              placeholder="Hi there, we just added some new pieces we think you'll love…"
             />
           </div>
           <Button

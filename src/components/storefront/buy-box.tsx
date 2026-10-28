@@ -61,7 +61,7 @@ export function BuyBox({ product }: { product: Product }) {
             {product.variantGroup!.label}
             {needsVariant && (
               <span className="ml-2 font-normal text-sf-brand" role="alert">
-                — pick one first
+                (pick one first)
               </span>
             )}
           </legend>

@@ -93,7 +93,7 @@ export function StaggerItem({
 }
 
 // `format` is a serializable string (not a function) so AnimatedNumber can be
-// rendered from server components — RSC forbids passing functions across the
+// rendered from server components, RSC forbids passing functions across the
 // server/client boundary.
 function formatValue(n: number, format: "plain" | "money"): string {
   return format === "money"

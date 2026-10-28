@@ -19,7 +19,7 @@ export async function submitSupportRequest(
     return { error: "That doesn't look like an email address." };
   if (!input.subject.trim()) return { error: "Add a subject." };
   if (input.message.trim().length < 10)
-    return { error: "Give us a little more to go on — 10+ characters." };
+    return { error: "Give us a little more to go on, 10+ characters." };
 
   await prisma.supportRequest.create({
     data: {

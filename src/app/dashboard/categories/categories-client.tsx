@@ -63,7 +63,7 @@ export function CategoriesClient({
         return;
       }
       toast.success(
-        `"${name.trim()}" created — assign products from the product form`,
+        `"${name.trim()}" created, assign products from the product form`,
       );
       setName("");
       setError("");
@@ -124,7 +124,7 @@ export function CategoriesClient({
               <DialogHeader>
                 <DialogTitle>New collection</DialogTitle>
                 <DialogDescription>
-                  Name it the way a customer would look for it — “Sneakers”, not
+                  Name it the way a customer would look for it, “Sneakers”, not
                   “SKU group A”.
                 </DialogDescription>
               </DialogHeader>
@@ -166,7 +166,7 @@ export function CategoriesClient({
         <EmptyState
           icon={<FolderOpen />}
           title="No collections yet"
-          description="Collections keep a growing catalog browsable — customers filter by them in your shop."
+          description="Collections keep a growing catalog browsable, customers filter by them in your shop."
           action={
             <Button onClick={() => setOpen(true)}>
               <Plus className="size-4" />
@@ -237,7 +237,7 @@ export function CategoriesClient({
           <DialogHeader>
             <DialogTitle>Edit collection</DialogTitle>
             <DialogDescription>
-              Rename it and set a cover image — the image shows on your
+              Rename it and set a cover image, the image shows on your
               storefront&apos;s collections section.
             </DialogDescription>
           </DialogHeader>

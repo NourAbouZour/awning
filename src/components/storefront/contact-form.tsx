@@ -35,7 +35,7 @@ export function ContactForm({
       next.email = "That doesn't look like an email address.";
     if (!values.subject.trim()) next.subject = "A few words about the topic.";
     if (values.message.trim().length < 10)
-      next.message = "Give us a little more to go on — 10+ characters.";
+      next.message = "Give us a little more to go on, 10+ characters.";
     setErrors(next);
     if (Object.keys(next).length) return;
 

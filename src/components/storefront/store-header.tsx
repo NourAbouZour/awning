@@ -205,7 +205,7 @@ function SearchDialog({
           <div className="max-h-96 overflow-y-auto p-2">
             {results.length === 0 ? (
               <p className="px-4 py-8 text-center text-sm text-sf-muted">
-                Nothing matches “{query}” — try a different word.
+                Nothing matches “{query}”, try a different word.
               </p>
             ) : (
               <ul>

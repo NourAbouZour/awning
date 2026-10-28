@@ -52,7 +52,7 @@ export function mapsLinkFor(opts: {
   const parts = [opts.address, opts.district, opts.city, "Lebanon"].filter(
     (p) => p && p.trim(),
   );
-  if (parts.length <= 1) return null; // only "Lebanon" — not worth a link
+  if (parts.length <= 1) return null; // only "Lebanon", not worth a link
   const query = encodeURIComponent(parts.join(", "));
   return `https://www.google.com/maps/search/?api=1&query=${query}`;
 }

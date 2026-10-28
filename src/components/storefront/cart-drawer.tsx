@@ -55,7 +55,7 @@ export function CartDrawer() {
       );
       setCheckingOut(false);
       if (res.error || !res.orderNumber) {
-        setError(res.error ?? "Something went wrong — try again.");
+        setError(res.error ?? "Something went wrong, try again.");
         return;
       }
       const orderNumber = res.orderNumber;
@@ -83,7 +83,7 @@ export function CartDrawer() {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      {/* portal renders outside the themed wrapper — re-apply the theme vars */}
+      {/* portal renders outside the themed wrapper, re-apply the theme vars */}
       <SheetContent
         side="right"
         className="storefront bg-sf-bg text-sf-ink"

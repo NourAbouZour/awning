@@ -44,7 +44,7 @@ export default async function ContactPage({
     addressLine && {
       icon: MapPin,
       label: "Shop",
-      value: mapsLink ? `${addressLine} — View on Google Maps` : addressLine,
+      value: mapsLink ? `${addressLine}, View on Google Maps` : addressLine,
       href: mapsLink ?? undefined,
     },
     // Only use a plain "Hours" row when hours aren't structured.
@@ -65,7 +65,7 @@ export default async function ContactPage({
       <div className="max-w-xl">
         <h1 className="sf-display text-4xl md:text-5xl">Talk to us</h1>
         <p className="mt-4 text-lg leading-relaxed text-sf-muted">
-          Questions about an order, sizing, or anything else — write and a real
+          Questions about an order, sizing, or anything else, write and a real
           person from {store.name} will get back to you.
         </p>
       </div>

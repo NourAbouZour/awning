@@ -17,7 +17,7 @@ export interface RevenuePoint {
   orders: number;
 }
 
-/** 30-day revenue, single series — no legend needed, the card title names it. */
+/** 30-day revenue, single series, no legend needed, the card title names it. */
 export function RevenueChart({ data }: { data: RevenuePoint[] }) {
   const revenueSeries = data;
   return (

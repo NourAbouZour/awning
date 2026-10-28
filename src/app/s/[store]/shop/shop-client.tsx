@@ -157,7 +157,7 @@ export function ShopClient() {
           className="mt-2 text-sf-brand"
         />
         <p className="mt-2.5 text-xs text-sf-muted">
-          {formatMoney(price[0], store.currency)} —{" "}
+          {formatMoney(price[0], store.currency)} -{" "}
           {formatMoney(price[1], store.currency)}
         </p>
       </FacetGroup>

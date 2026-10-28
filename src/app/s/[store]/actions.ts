@@ -28,7 +28,7 @@ export async function submitContactMessage(
     return { error: "That doesn't look like an email address." };
   if (!input.subject.trim()) return { error: "Add a subject." };
   if (input.body.trim().length < 10)
-    return { error: "Give us a little more to go on — 10+ characters." };
+    return { error: "Give us a little more to go on, 10+ characters." };
 
   await prisma.contactMessage.create({
     data: {
@@ -193,9 +193,9 @@ export async function placeOrder(
         e && typeof e === "object" && "code" in e
           ? (e as { code?: string }).code
           : undefined;
-      if (code === "P2002" && attempt < 4) continue; // number race — retry
+      if (code === "P2002" && attempt < 4) continue; // number race, retry
       return { error: "Something went wrong placing your order. Please try again." };
     }
   }
-  return { error: "Couldn't place your order — please try again." };
+  return { error: "Couldn't place your order, please try again." };
 }

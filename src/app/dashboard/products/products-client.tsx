@@ -140,7 +140,7 @@ export function ProductsClient({
   }
 
   const categoryName = (id: string) =>
-    categories.find((c) => c.id === id)?.name ?? "—";
+    categories.find((c) => c.id === id)?.name ?? "-";
 
   return (
     <>

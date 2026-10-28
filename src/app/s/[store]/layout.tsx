@@ -22,12 +22,12 @@ export async function generateMetadata({
   if (!store) return {};
   return {
     title: {
-      default: `${store.name} — ${store.tagline}`,
+      default: `${store.name} · ${store.tagline}`,
       template: `%s · ${store.name}`,
     },
     description: store.theme.heroSub,
     openGraph: {
-      title: `${store.name} — ${store.tagline}`,
+      title: `${store.name} · ${store.tagline}`,
       description: store.theme.heroSub,
       images: store.theme.heroImage ? [{ url: store.theme.heroImage }] : [],
     },

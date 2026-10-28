@@ -2,7 +2,7 @@ import Link from "next/link";
 import { NewsletterForm } from "@/components/storefront/newsletter-form";
 import type { Store } from "@/lib/types";
 
-/* lucide no longer ships brand glyphs — tiny inline marks instead. */
+/* lucide no longer ships brand glyphs, tiny inline marks instead. */
 function InstagramIcon({ className }: { className?: string }) {
   return (
     <svg

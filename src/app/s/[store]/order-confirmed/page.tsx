@@ -28,7 +28,7 @@ export default async function OrderConfirmedPage({
     {
       icon: Mail,
       title: "Order recorded",
-      body: "Your order details are saved — keep your order number handy.",
+      body: "Your order details are saved, keep your order number handy.",
     },
     {
       icon: Package,
@@ -38,7 +38,7 @@ export default async function OrderConfirmedPage({
     {
       icon: Truck,
       title: "On its way",
-      body: "You'll get tracking the moment it ships — usually within 24 hours.",
+      body: "You'll get tracking the moment it ships, usually within 24 hours.",
     },
   ];
 
@@ -48,7 +48,7 @@ export default async function OrderConfirmedPage({
         <Check className="size-8 text-sf-on-brand" strokeWidth={3} />
       </span>
       <h1 className="sf-display mt-7 animate-fade-up text-4xl [animation-delay:80ms] md:text-5xl">
-        Thank you — it&apos;s yours.
+        Thank you, it&apos;s yours.
       </h1>
       <p className="mx-auto mt-4 max-w-md animate-fade-up text-lg leading-relaxed text-sf-muted [animation-delay:160ms]">
         {orderNumber ? (

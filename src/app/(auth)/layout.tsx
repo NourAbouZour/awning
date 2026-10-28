@@ -37,7 +37,7 @@ export default function AuthLayout({
               before dinner.”
             </p>
             <footer className="mt-6 text-white/75">
-              Renata Silva — Silva Prints, Miami
+              Renata Silva, Silva Prints, Miami
             </footer>
           </blockquote>
           <div className="flex items-center gap-6 text-sm text-white/70">

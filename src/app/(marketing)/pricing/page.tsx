@@ -8,7 +8,7 @@ import { PricingContactForm } from "./contact-form";
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Shopleb is free while you build your store. One simple monthly subscription when you're ready — no per-sale fees, ever.",
+    "Shopleb is free while you build your store. One simple monthly subscription when you're ready, no per-sale fees, ever.",
 };
 
 export default function PricingPage() {
@@ -22,15 +22,15 @@ export default function PricingPage() {
             </h1>
             <p className="mt-5 text-lg leading-relaxed text-ink-body">
               Build free. Publish free. One simple monthly subscription when
-              you&apos;re ready — no per-sale fees, no surprises.
+              you&apos;re ready, no per-sale fees, no surprises.
             </p>
           </div>
           <div className="mt-14">
             <PricingTiers />
           </div>
           <p className="mt-8 text-center text-sm text-ink-soft">
-            All prices in USD. Flat monthly subscription — no per-sale fees.
-            Cancel anytime — your store stays exportable.
+            All prices in USD. Flat monthly subscription, no per-sale fees.
+            Cancel anytime, your store stays exportable.
           </p>
         </div>
       </section>
@@ -38,7 +38,7 @@ export default function PricingPage() {
       <section className="border-t border-line bg-paper py-16 md:py-20">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 px-5 text-center md:px-8">
           <h2 className="font-display text-2xl font-bold tracking-tight text-ink md:text-3xl">
-            Not sure? Start on Stall — upgrading takes one click.
+            Not sure? Start on Stall, upgrading takes one click.
           </h2>
           <Button size="xl" asChild>
             <Link href="/signup">

@@ -23,7 +23,7 @@ export default function EmailMarketingPage() {
         </h2>
         <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-body">
           Email campaigns are tailored to your store. To switch them on and plan
-          your first send, talk to the developer directly on WhatsApp — you&apos;ll
+          your first send, talk to the developer directly on WhatsApp, you&apos;ll
           get it set up fast.
         </p>
         <div className="mt-6 flex justify-center">

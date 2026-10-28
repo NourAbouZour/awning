@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Side sheet built on Radix Dialog — used for the cart drawer, mobile
+ * Side sheet built on Radix Dialog, used for the cart drawer, mobile
  * filters, and mobile navigation.
  */
 import * as React from "react";

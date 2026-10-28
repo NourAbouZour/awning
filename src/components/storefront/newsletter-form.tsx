@@ -33,7 +33,7 @@ export function NewsletterForm({ compact }: { compact?: boolean }) {
         role="status"
       >
         <Check className="size-4" />
-        You&apos;re on the list — welcome.
+        You&apos;re on the list, welcome.
       </p>
     );
   }
@@ -66,7 +66,7 @@ export function NewsletterForm({ compact }: { compact?: boolean }) {
       </div>
       {state === "error" && (
         <p className="mt-2 text-xs text-current/70" role="alert">
-          That doesn&apos;t look like an email address — check for typos.
+          That doesn&apos;t look like an email address, check for typos.
         </p>
       )}
     </form>

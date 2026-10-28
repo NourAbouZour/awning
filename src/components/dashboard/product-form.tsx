@@ -175,7 +175,7 @@ export function ProductForm({
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Circuit Runner — Ember"
+              placeholder="e.g. Circuit Runner, Ember"
               aria-invalid={!!errors.title}
             />
             {errors.title && (
@@ -222,7 +222,7 @@ export function ProductForm({
         <Card className="p-5">
           <Label>Images</Label>
           <p className="mt-0.5 text-xs text-ink-soft">
-            Drag to reorder — the first image is the cover.
+            Drag to reorder, the first image is the cover.
           </p>
           <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
             {images.map((src, i) => (
@@ -304,7 +304,7 @@ export function ProductForm({
             <div>
               <Label>Variants</Label>
               <p className="mt-0.5 text-xs text-ink-soft">
-                Sizes, colors, volumes — each with its own stock and optional
+                Sizes, colors, volumes, each with its own stock and optional
                 price.
               </p>
             </div>
@@ -368,7 +368,7 @@ export function ProductForm({
                       aria-label={`Variant ${i + 1} price`}
                       value={v.price}
                       type="number"
-                      placeholder={price || "—"}
+                      placeholder={price || "-"}
                       className="h-8 text-[13px]"
                       onChange={(e) =>
                         setVariants((vs) =>
@@ -463,7 +463,7 @@ export function ProductForm({
               step="0.01"
               value={compareAt}
               onChange={(e) => setCompareAt(e.target.value)}
-              placeholder="Optional — shows as a strikethrough"
+              placeholder="Optional, shows as a strikethrough"
               aria-invalid={!!errors.compareAt}
             />
             {errors.compareAt && (

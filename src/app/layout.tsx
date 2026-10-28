@@ -6,7 +6,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://shopleb.com"),
   title: {
-    default: "Shopleb — Put up your shop",
+    default: "Shopleb · Put up your shop",
     template: "%s · Shopleb",
   },
   description:

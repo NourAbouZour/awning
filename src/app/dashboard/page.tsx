@@ -112,7 +112,7 @@ export default async function DashboardHome() {
         <Card className="p-5">
           <h2 className="text-sm font-semibold text-ink">Finish setting up</h2>
           <p className="mt-0.5 text-xs text-ink-soft">
-            3 of 5 done — almost there.
+            3 of 5 done, almost there.
           </p>
           <ul className="mt-4 space-y-1">
             {[

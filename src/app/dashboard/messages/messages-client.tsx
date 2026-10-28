@@ -38,7 +38,7 @@ export function MessagesClient({ initial }: { initial: ContactMessage[] }) {
 
   function sendReply() {
     if (!reply.trim() || !active) return;
-    // No email backend in this phase — hand off to the merchant's mail client.
+    // No email backend in this phase, hand off to the merchant's mail client.
     const subject = encodeURIComponent(`Re: ${active.subject}`);
     const body = encodeURIComponent(reply);
     window.location.href = `mailto:${active.email}?subject=${subject}&body=${body}`;

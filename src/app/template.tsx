@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 
-// Runs on every route change — a gentle fade/rise so navigation feels smooth.
+// Runs on every route change, a gentle fade/rise so navigation feels smooth.
 export default function Template({ children }: { children: React.ReactNode }) {
   const reduce = useReducedMotion();
   if (reduce) return <>{children}</>;

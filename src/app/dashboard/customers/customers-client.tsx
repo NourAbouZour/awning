@@ -54,7 +54,7 @@ export function CustomersClient({
             <EmptyState
               icon={<Users />}
               title="No customers match"
-              description="Try a different search — or share your store link to find your first customers."
+              description="Try a different search, or share your store link to find your first customers."
             />
           </div>
         ) : (

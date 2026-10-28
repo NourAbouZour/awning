@@ -2,7 +2,7 @@
 
 /**
  * Merchant onboarding: five short steps with a live storefront preview that
- * updates on every choice. UI-only for now — "publishing" routes into the
+ * updates on every choice. UI-only for now, "publishing" routes into the
  * dashboard.
  */
 import * as React from "react";
@@ -283,7 +283,7 @@ export default function OnboardingPage() {
           {step === 0 && (
             <StepShell
               title="What's your store called?"
-              sub="You can change this any time — nothing here is permanent."
+              sub="You can change this any time, nothing here is permanent."
             >
               <div className="space-y-5">
                 <div className="space-y-1.5">
@@ -336,7 +336,7 @@ export default function OnboardingPage() {
                     {slugStatus === "taken" && (
                       <span className="flex items-center gap-1.5 text-danger">
                         <X className="size-3" />
-                        Taken — try another name or tweak the address
+                        Taken, try another name or tweak the address
                       </span>
                     )}
                   </div>
@@ -389,7 +389,7 @@ export default function OnboardingPage() {
                         onUploaded={(url) => patch({ logoUrl: url })}
                       />
                       <span className="text-sm text-ink-soft">
-                        A PNG or JPG — or skip and we&apos;ll use your store name.
+                        A PNG or JPG, or skip and we&apos;ll use your store name.
                       </span>
                     </div>
                   )}
@@ -473,7 +473,7 @@ export default function OnboardingPage() {
           {step === 2 && (
             <StepShell
               title="Say hello to your customers"
-              sub="The first thing visitors see. We wrote you a decent default — make it yours."
+              sub="The first thing visitors see. We wrote you a decent default, make it yours."
             >
               <div className="space-y-6">
                 <div className="space-y-2">
@@ -535,7 +535,7 @@ export default function OnboardingPage() {
           {step === 3 && (
             <StepShell
               title="Add your first product"
-              sub="Just the basics — photos, variants, and inventory come later. Or skip and add it from your dashboard."
+              sub="Just the basics, photos, variants, and inventory come later. Or skip and add it from your dashboard."
             >
               <div className="space-y-5">
                 <div className="space-y-1.5">
@@ -669,7 +669,7 @@ export default function OnboardingPage() {
           <div className="sticky top-10">
             <p className="mb-3 flex items-center gap-2 text-xs font-medium text-ink-soft">
               <span className="size-1.5 animate-pulse rounded-full bg-ok" aria-hidden />
-              Live preview — updates as you choose
+              Live preview, updates as you choose
             </p>
             <BrowserFrame
               url={`${state.slug || "your-store"}.shopleb.shop`}

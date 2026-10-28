@@ -127,7 +127,7 @@ export function SettingsClient({
               <h2 className="text-sm font-semibold text-ink">Plan</h2>
               <p className="mt-0.5 text-xs text-ink-soft">
                 {plan === "stall"
-                  ? "Free plan — up to 5 products."
+                  ? "Free plan, up to 5 products."
                   : "Unlimited products."}
               </p>
             </div>
@@ -146,7 +146,7 @@ export function SettingsClient({
           </div>
           {plan !== "stall" && !billingPaid && (
             <p className="rounded-lg bg-warn-wash px-3 py-2 text-xs text-warn">
-              Payment pending — we&apos;ll be in touch to arrange it. Your store
+              Payment pending, we&apos;ll be in touch to arrange it. Your store
               stays live meanwhile.
             </p>
           )}
@@ -177,7 +177,7 @@ export function SettingsClient({
                 </span>
               </div>
               <p className="text-xs text-ink-soft">
-                Changing this breaks old links — your previous address stops
+                Changing this breaks old links, your previous address stops
                 working immediately.
               </p>
             </div>
@@ -224,7 +224,7 @@ export function SettingsClient({
             </div>
           </div>
 
-          {/* Address — Lebanon city + district dropdowns + Google Maps link */}
+          {/* Address, Lebanon city + district dropdowns + Google Maps link */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label>City / Governorate</Label>
@@ -297,7 +297,7 @@ export function SettingsClient({
             </p>
           </div>
 
-          {/* Opening hours — day + time, not free text */}
+          {/* Opening hours, day + time, not free text */}
           <div className="space-y-2">
             <Label>Opening hours</Label>
             <div className="divide-y divide-line rounded-lg border border-line">
@@ -394,7 +394,7 @@ export function SettingsClient({
                   <Badge variant="amber">Not connected</Badge>
                 </h2>
                 <p className="text-xs text-ink-soft">
-                  Online card payments aren&apos;t enabled in this build —
+                  Online card payments aren&apos;t enabled in this build -
                   checkout records orders directly.
                 </p>
               </div>
