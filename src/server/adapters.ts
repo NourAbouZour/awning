@@ -115,9 +115,12 @@ interface ThemeRow {
   heroHeadline: string;
   heroSub: string;
   heroCta: string;
+  collectionsTitle: string;
   storyImage: string;
   storyTitle: string;
   storyBody: string;
+  newsletterTitle: string;
+  newsletterBody: string;
   footerText: string;
   instagram: string | null;
   tiktok: string | null;
@@ -138,9 +141,14 @@ export function toTheme(row: ThemeRow): StoreTheme {
     heroHeadline: row.heroHeadline,
     heroSub: row.heroSub,
     heroCta: row.heroCta,
+    collectionsTitle: row.collectionsTitle ?? "Shop by collection",
     storyImage: row.storyImage,
     storyTitle: row.storyTitle,
     storyBody: row.storyBody,
+    newsletterTitle: row.newsletterTitle ?? "Be first to every drop",
+    newsletterBody:
+      row.newsletterBody ??
+      "Join the list for new releases and restocks. One or two emails a month, never more.",
     footerText: row.footerText,
     sections: Array.isArray(row.sections) ? (row.sections as HomeSection[]) : [],
     socials,
@@ -157,9 +165,14 @@ interface StoreRow {
   contactEmail: string;
   phone: string;
   address: string;
+  city?: string | null;
+  district?: string | null;
+  mapsUrl?: string | null;
   hours: string;
   currency: string;
   shippingNote: string;
+  freeShipping?: DecimalLike | null;
+  signupDiscountCode?: string | null;
   theme: ThemeRow | null;
   categories: CategoryRow[];
   products: ProductRow[];
@@ -176,9 +189,18 @@ export function toStore(row: StoreRow): Store {
     contactEmail: row.contactEmail,
     phone: row.phone,
     address: row.address,
+    ...(row.city ? { city: row.city } : {}),
+    ...(row.district ? { district: row.district } : {}),
+    ...(row.mapsUrl ? { mapsUrl: row.mapsUrl } : {}),
     hours: row.hours,
     currency: row.currency,
     shippingNote: row.shippingNote,
+    ...(decToNum(row.freeShipping) !== undefined
+      ? { freeShipping: decToNum(row.freeShipping) }
+      : {}),
+    ...(row.signupDiscountCode
+      ? { signupDiscountCode: row.signupDiscountCode }
+      : {}),
     theme: row.theme
       ? toTheme(row.theme)
       : ({} as StoreTheme),

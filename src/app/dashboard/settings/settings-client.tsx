@@ -15,12 +15,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
 import { saveSettings, setOwnPlan } from "@/app/dashboard/settings/actions";
 import { PLAN_LABELS, type Plan } from "@/lib/plan";
-import type { Store } from "@/lib/types";
+import type { DayHours, Store } from "@/lib/types";
 import { slugify } from "@/lib/utils";
+import { LEBANON_CITIES, districtsFor } from "@/lib/lebanon";
+import { defaultHours, parseHours } from "@/lib/hours";
+
+const CURRENCIES: [string, string][] = [
+  ["USD", "US Dollar ($)"],
+  ["LBP", "Lebanese Pound (ل.ل)"],
+  ["EUR", "Euro (€)"],
+  ["GBP", "British Pound (£)"],
+  ["CAD", "Canadian Dollar (C$)"],
+  ["AUD", "Australian Dollar (A$)"],
+];
 
 export function SettingsClient({
   store,
@@ -37,10 +49,22 @@ export function SettingsClient({
   const [email, setEmail] = React.useState(store.contactEmail);
   const [phone, setPhone] = React.useState(store.phone);
   const [address, setAddress] = React.useState(store.address);
-  const [hours, setHours] = React.useState(store.hours);
+  const [city, setCity] = React.useState(store.city ?? "");
+  const [district, setDistrict] = React.useState(store.district ?? "");
+  const [mapsUrl, setMapsUrl] = React.useState(store.mapsUrl ?? "");
+  const [hours, setHours] = React.useState<DayHours[]>(
+    () => parseHours(store.hours) ?? defaultHours(),
+  );
   const [currency, setCurrency] = React.useState(store.currency);
   const [shippingNote, setShippingNote] = React.useState(store.shippingNote);
+  const [freeShipping, setFreeShipping] = React.useState(
+    store.freeShipping != null ? String(store.freeShipping) : "",
+  );
   const [saving, setSaving] = React.useState(false);
+
+  function patchDay(i: number, p: Partial<DayHours>) {
+    setHours((h) => h.map((d, idx) => (idx === i ? { ...d, ...p } : d)));
+  }
 
   function save() {
     if (name.trim().length < 2) {
@@ -55,9 +79,13 @@ export function SettingsClient({
         contactEmail: email,
         phone,
         address,
-        hours,
+        city,
+        district,
+        mapsUrl,
+        hours: JSON.stringify(hours),
         currency,
         shippingNote,
+        freeShipping,
       });
       setSaving(false);
       if (res.error) toast.error(res.error);
@@ -76,6 +104,8 @@ export function SettingsClient({
       }
     });
   }
+
+  const districts = districtsFor(city);
 
   return (
     <>
@@ -159,13 +189,7 @@ export function SettingsClient({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {[
-                  ["USD", "US Dollar ($)"],
-                  ["EUR", "Euro (€)"],
-                  ["GBP", "British Pound (£)"],
-                  ["CAD", "Canadian Dollar (C$)"],
-                  ["AUD", "Australian Dollar (A$)"],
-                ].map(([v, l]) => (
+                {CURRENCIES.map(([v, l]) => (
                   <SelectItem key={v} value={v}>
                     {l}
                   </SelectItem>
@@ -199,28 +223,149 @@ export function SettingsClient({
               />
             </div>
           </div>
+
+          {/* Address — Lebanon city + district dropdowns + Google Maps link */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label>City / Governorate</Label>
+              <Select
+                value={city}
+                onValueChange={(v) => {
+                  setCity(v);
+                  // Reset district if it doesn't belong to the new city.
+                  if (!districtsFor(v).includes(district)) setDistrict("");
+                }}
+              >
+                <SelectTrigger aria-label="City">
+                  <SelectValue placeholder="Select a city" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LEBANON_CITIES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>District</Label>
+              <Select
+                value={district}
+                onValueChange={setDistrict}
+                disabled={districts.length === 0}
+              >
+                <SelectTrigger aria-label="District">
+                  <SelectValue
+                    placeholder={
+                      districts.length ? "Select a district" : "Pick a city first"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {districts.map((d) => (
+                    <SelectItem key={d} value={d}>
+                      {d}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           <div className="space-y-1.5">
-            <Label htmlFor="address">Address</Label>
+            <Label htmlFor="address">Street / building</Label>
             <Textarea
               id="address"
               rows={2}
               className="min-h-0"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
+              placeholder="e.g. Hamra Street, Pavilion building, 2nd floor"
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="hours">Opening hours</Label>
+            <Label htmlFor="maps">Google Maps link (optional)</Label>
             <Input
-              id="hours"
-              value={hours}
-              onChange={(e) => setHours(e.target.value)}
+              id="maps"
+              value={mapsUrl}
+              onChange={(e) => setMapsUrl(e.target.value)}
+              placeholder="Paste a Google Maps link to your exact location"
             />
+            <p className="text-xs text-ink-soft">
+              Leave blank and we&apos;ll build a Maps link from your city,
+              district, and street automatically.
+            </p>
+          </div>
+
+          {/* Opening hours — day + time, not free text */}
+          <div className="space-y-2">
+            <Label>Opening hours</Label>
+            <div className="divide-y divide-line rounded-lg border border-line">
+              {hours.map((d, i) => (
+                <div
+                  key={d.day}
+                  className="flex flex-wrap items-center gap-3 px-3 py-2.5"
+                >
+                  <span className="w-10 text-sm font-medium text-ink">
+                    {d.day}
+                  </span>
+                  <Switch
+                    checked={!d.closed}
+                    onCheckedChange={(open) => patchDay(i, { closed: !open })}
+                    aria-label={`${d.day} open`}
+                  />
+                  {d.closed ? (
+                    <span className="text-sm text-ink-soft">Closed</span>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="time"
+                        value={d.open}
+                        onChange={(e) => patchDay(i, { open: e.target.value })}
+                        className="h-9 rounded-lg border border-line-strong bg-paper px-2.5 text-sm outline-none focus:border-green focus:ring-2 focus:ring-green/15"
+                        aria-label={`${d.day} opening time`}
+                      />
+                      <span className="text-ink-soft">–</span>
+                      <input
+                        type="time"
+                        value={d.close}
+                        onChange={(e) => patchDay(i, { close: e.target.value })}
+                        className="h-9 rounded-lg border border-line-strong bg-paper px-2.5 text-sm outline-none focus:border-green focus:ring-2 focus:ring-green/15"
+                        aria-label={`${d.day} closing time`}
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </Card>
 
         <Card className="space-y-5 p-5">
           <h2 className="text-sm font-semibold text-ink">Shipping</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="free-shipping">Free shipping over</Label>
+              <div className="flex items-center overflow-hidden rounded-lg border border-line-strong bg-paper focus-within:border-green focus-within:ring-2 focus-within:ring-green/15">
+                <span className="border-r border-line bg-canvas px-3 text-sm text-ink-soft">
+                  {currency}
+                </span>
+                <input
+                  id="free-shipping"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  className="h-10 min-w-0 flex-1 bg-transparent px-3.5 text-sm outline-none"
+                  value={freeShipping}
+                  onChange={(e) => setFreeShipping(e.target.value)}
+                  placeholder="e.g. 50"
+                />
+              </div>
+              <p className="text-xs text-ink-soft">
+                Orders at or above this amount ship free. Leave blank for none.
+              </p>
+            </div>
+          </div>
           <div className="space-y-1.5">
             <Label htmlFor="shipping-note">Shipping note</Label>
             <Textarea

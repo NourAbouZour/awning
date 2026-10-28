@@ -40,10 +40,14 @@ export const voltaStore: Store = {
     heroHeadline: "Built to move. Made to last.",
     heroSub: "Performance sneakers and streetwear, designed in San Francisco and worn everywhere.",
     heroCta: "Shop the drop",
+    collectionsTitle: "Shop by collection",
     storyImage: u("photo-1519744792095-2f2205e87b6f", 1800),
     storyTitle: "We started on a track, not in a boardroom",
     storyBody:
       "VOLTA began in 2019 when two college sprinters got tired of choosing between shoes that performed and shoes that looked good. Every pair we make is tested by real runners on real pavement for six months before it ships. If it doesn't survive the city, it doesn't get a box.",
+    newsletterTitle: "Be first to every drop",
+    newsletterBody:
+      "Join the VOLTA list for new releases and restocks. One or two emails a month, never more.",
     footerText: "VOLTA · Designed in San Francisco. Worn everywhere.",
     sections: [
       { id: "hero", enabled: true },
@@ -362,10 +366,14 @@ export const odeStore: Store = {
     heroHeadline: "Three steps. Nothing you don't need.",
     heroSub: "Clinically-dosed botanicals in exactly the amounts your skin can use — made fresh monthly in Portland.",
     heroCta: "Shop rituals",
+    collectionsTitle: "Shop by collection",
     storyImage: u("photo-1616394584738-fc6e612e71b9", 1800),
     storyTitle: "Formulated by a chemist who got tired of 12-step routines",
     storyBody:
       "ODE exists because our founder, a cosmetic chemist for fifteen years, kept watching brands add steps instead of results. We make eight products, total. Each one is made in small monthly batches, dated like good food, and dosed at clinical levels — because an ingredient list is a promise, not a mood board.",
+    newsletterTitle: "Be first to every drop",
+    newsletterBody:
+      "Join the ODE list for new releases and restocks. One or two emails a month, never more.",
     footerText: "ODE Skin · Made fresh monthly in Portland, Oregon.",
     sections: [
       { id: "hero", enabled: true },

@@ -71,9 +71,14 @@ model Store {
   contactEmail String
   phone        String
   address      String   @db.Text
-  hours        String
+  city         String?
+  district     String?
+  mapsUrl      String?  @db.Text
+  hours        String   @db.Text
   currency     String   @default("USD")
   shippingNote String   @db.Text
+  freeShipping Decimal? @db.Decimal(10, 2)
+  signupDiscountCode String?
   createdAt    DateTime @default(now())
 
   theme       StoreTheme?
@@ -117,9 +122,12 @@ model StoreTheme {
   heroHeadline  String
   heroSub       String @db.Text
   heroCta       String
+  collectionsTitle String @default("Shop by collection")
   storyImage    String @db.Text
   storyTitle    String
   storyBody     String @db.Text
+  newsletterTitle String @default("Be first to every drop")
+  newsletterBody  String @db.Text @default("Join the list for new releases and restocks. One or two emails a month, never more.")
   footerText    String @db.Text
   instagram     String?
   tiktok        String?

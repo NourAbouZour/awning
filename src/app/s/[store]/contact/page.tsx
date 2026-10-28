@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import { ContactForm } from "@/components/storefront/contact-form";
 import { getStoreBySlug } from "@/server/stores";
+import { mapsLinkFor } from "@/lib/lebanon";
+import { parseHours, formatDayRange } from "@/lib/hours";
 
 export const metadata: Metadata = { title: "Contact" };
 
@@ -15,17 +17,48 @@ export default async function ContactPage({
   const store = await getStoreBySlug(slug);
   if (!store) notFound();
 
+  const addressLine = [store.address, store.district, store.city]
+    .filter((p) => p && p.trim())
+    .join(", ");
+  const mapsLink = mapsLinkFor({
+    mapsUrl: store.mapsUrl,
+    address: store.address,
+    district: store.district,
+    city: store.city,
+  });
+  const hours = parseHours(store.hours);
+
   const info = [
-    {
+    store.contactEmail && {
       icon: Mail,
       label: "Email",
       value: store.contactEmail,
       href: `mailto:${store.contactEmail}`,
     },
-    { icon: Phone, label: "Phone", value: store.phone, href: `tel:${store.phone.replace(/[^+\d]/g, "")}` },
-    { icon: MapPin, label: "Shop", value: store.address },
-    { icon: Clock, label: "Hours", value: store.hours },
-  ];
+    store.phone && {
+      icon: Phone,
+      label: "Phone",
+      value: store.phone,
+      href: `tel:${store.phone.replace(/[^+\d]/g, "")}`,
+    },
+    addressLine && {
+      icon: MapPin,
+      label: "Shop",
+      value: mapsLink ? `${addressLine} — View on Google Maps` : addressLine,
+      href: mapsLink ?? undefined,
+    },
+    // Only use a plain "Hours" row when hours aren't structured.
+    !hours && store.hours && {
+      icon: Clock,
+      label: "Hours",
+      value: store.hours,
+    },
+  ].filter(Boolean) as {
+    icon: typeof Mail;
+    label: string;
+    value: string;
+    href?: string;
+  }[];
 
   return (
     <div className="mx-auto max-w-7xl px-5 py-12 md:px-8 md:py-16">
@@ -65,6 +98,29 @@ export default async function ContactPage({
               </li>
             ))}
           </ul>
+
+          {hours && (
+            <div className="mt-8">
+              <p className="flex items-center gap-2 text-sm font-semibold">
+                <Clock className="size-4" />
+                Opening hours
+              </p>
+              <ul className="mt-3 space-y-1.5">
+                {hours.map((d) => (
+                  <li
+                    key={d.day}
+                    className="flex items-center justify-between gap-6 text-sm"
+                  >
+                    <span className="font-medium">{d.day}</span>
+                    <span className={d.closed ? "text-sf-muted" : ""}>
+                      {formatDayRange(d)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="mt-10 rounded-2xl bg-sf-wash p-6">
             <p className="text-sm font-semibold">Order questions?</p>
             <p className="mt-1.5 text-sm leading-relaxed text-sf-muted">

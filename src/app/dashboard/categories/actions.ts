@@ -60,6 +60,34 @@ export async function renameCategory(
   return {};
 }
 
+/** Update a collection's name and/or cover image in one call. */
+export async function updateCategory(
+  id: string,
+  input: { name: string; image: string },
+): Promise<CategoryActionState> {
+  const store = await requireCurrentStore();
+  if (input.name.trim().length < 2)
+    return { error: "Give the collection a name." };
+  const owned = await prisma.category.findFirst({
+    where: { id, storeId: store.id },
+    select: { id: true, name: true },
+  });
+  if (!owned) return { error: "Collection not found." };
+
+  const image = input.image.startsWith("blob:") ? "" : input.image;
+  const data: { name: string; image: string; slug?: string } = {
+    name: input.name.trim(),
+    image,
+  };
+  if (input.name.trim() !== owned.name) {
+    data.slug = await uniqueSlug(store.id, input.name, id);
+  }
+  await prisma.category.update({ where: { id }, data });
+  revalidatePath("/dashboard/categories");
+  revalidatePath(`/s/${store.slug}`);
+  return {};
+}
+
 export async function deleteCategory(
   id: string,
 ): Promise<CategoryActionState> {

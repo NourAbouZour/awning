@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireCurrentStore, getCurrentUser } from "@/lib/auth";
 import { slugify } from "@/lib/utils";
@@ -12,9 +13,13 @@ export interface SettingsInput {
   contactEmail: string;
   phone: string;
   address: string;
+  city: string;
+  district: string;
+  mapsUrl: string;
   hours: string;
   currency: string;
   shippingNote: string;
+  freeShipping: string;
 }
 
 export async function saveSettings(
@@ -32,6 +37,14 @@ export async function saveSettings(
   });
   if (clash) return { error: "That store address is already taken." };
 
+  const freeShippingNum = Number(input.freeShipping);
+  const freeShipping =
+    input.freeShipping.trim() !== "" &&
+    Number.isFinite(freeShippingNum) &&
+    freeShippingNum >= 0
+      ? new Prisma.Decimal(freeShippingNum)
+      : null;
+
   await prisma.store.update({
     where: { id: store.id },
     data: {
@@ -40,9 +53,13 @@ export async function saveSettings(
       contactEmail: input.contactEmail,
       phone: input.phone,
       address: input.address,
+      city: input.city.trim() || null,
+      district: input.district.trim() || null,
+      mapsUrl: input.mapsUrl.trim() || null,
       hours: input.hours,
       currency: input.currency,
       shippingNote: input.shippingNote,
+      freeShipping,
     },
   });
 

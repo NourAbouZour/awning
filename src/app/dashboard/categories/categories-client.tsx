@@ -26,10 +26,11 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ImageUploadButton } from "@/components/ui/image-upload-button";
 import {
   createCategory,
   deleteCategory,
-  renameCategory,
+  updateCategory,
 } from "@/app/dashboard/categories/actions";
 import type { Category } from "@/lib/types";
 import { slugify } from "@/lib/utils";
@@ -45,8 +46,9 @@ export function CategoriesClient({
   const [open, setOpen] = React.useState(false);
   const [name, setName] = React.useState("");
   const [error, setError] = React.useState("");
-  const [renameTarget, setRenameTarget] = React.useState<Category | null>(null);
-  const [renameName, setRenameName] = React.useState("");
+  const [editTarget, setEditTarget] = React.useState<Category | null>(null);
+  const [editName, setEditName] = React.useState("");
+  const [editImage, setEditImage] = React.useState("");
   const [pending, startTransition] = React.useTransition();
 
   function create() {
@@ -70,16 +72,25 @@ export function CategoriesClient({
     });
   }
 
-  function doRename() {
-    if (!renameTarget) return;
+  function openEdit(cat: Category) {
+    setEditTarget(cat);
+    setEditName(cat.name);
+    setEditImage(cat.image ?? "");
+  }
+
+  function doSaveEdit() {
+    if (!editTarget) return;
     startTransition(async () => {
-      const res = await renameCategory(renameTarget.id, renameName);
+      const res = await updateCategory(editTarget.id, {
+        name: editName,
+        image: editImage,
+      });
       if (res.error) {
         toast.error(res.error);
         return;
       }
-      toast.success("Collection renamed");
-      setRenameTarget(null);
+      toast.success("Collection updated");
+      setEditTarget(null);
       router.refresh();
     });
   }
@@ -201,14 +212,9 @@ export function CategoriesClient({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => {
-                        setRenameTarget(c);
-                        setRenameName(c.name);
-                      }}
-                    >
+                    <DropdownMenuItem onClick={() => openEdit(c)}>
                       <Pencil />
-                      Rename
+                      Edit
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem destructive onClick={() => remove(c)}>
@@ -224,28 +230,72 @@ export function CategoriesClient({
       )}
 
       <Dialog
-        open={!!renameTarget}
-        onOpenChange={(o) => !o && setRenameTarget(null)}
+        open={!!editTarget}
+        onOpenChange={(o) => !o && setEditTarget(null)}
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Rename collection</DialogTitle>
+            <DialogTitle>Edit collection</DialogTitle>
+            <DialogDescription>
+              Rename it and set a cover image — the image shows on your
+              storefront&apos;s collections section.
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-1.5">
-            <Label htmlFor="rename-name">Name</Label>
-            <Input
-              id="rename-name"
-              value={renameName}
-              autoFocus
-              onChange={(e) => setRenameName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && doRename()}
-            />
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-name">Name</Label>
+              <Input
+                id="edit-name"
+                value={editName}
+                autoFocus
+                onChange={(e) => setEditName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Cover image</Label>
+              {editImage ? (
+                <div className="flex items-center gap-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={editImage}
+                    alt=""
+                    className="h-20 w-32 rounded-md border border-line object-cover"
+                  />
+                  <div className="flex flex-col gap-2">
+                    <ImageUploadButton
+                      label="Replace"
+                      onUploaded={(url) => setEditImage(url)}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEditImage("")}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-wrap items-center gap-2">
+                  <ImageUploadButton
+                    label="Upload image"
+                    onUploaded={(url) => setEditImage(url)}
+                  />
+                  <span className="text-xs text-ink-soft">or</span>
+                  <Input
+                    placeholder="Paste an image URL"
+                    className="min-w-40 flex-1"
+                    onChange={(e) => setEditImage(e.target.value.trim())}
+                  />
+                </div>
+              )}
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRenameTarget(null)}>
+            <Button variant="outline" onClick={() => setEditTarget(null)}>
               Cancel
             </Button>
-            <Button onClick={doRename} disabled={pending}>
+            <Button onClick={doSaveEdit} disabled={pending}>
               Save
             </Button>
           </DialogFooter>

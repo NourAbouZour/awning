@@ -15,6 +15,7 @@ export interface CreateStoreInput {
   heroImage: string;
   heroHeadline: string;
   heroSub: string;
+  discountCode?: string;
   productTitle?: string;
   productPrice?: string;
   productImage?: string;
@@ -90,6 +91,7 @@ export async function createStore(
       hours: "",
       currency: "USD",
       shippingNote: "Flat $8 shipping. Free over $75.",
+      signupDiscountCode: input.discountCode?.trim() || null,
       theme: {
         create: {
           brandColor: input.brandColor,

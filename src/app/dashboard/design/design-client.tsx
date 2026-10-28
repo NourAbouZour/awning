@@ -84,9 +84,12 @@ export function DesignClient({ initialStore }: { initialStore: Store }) {
           heroHeadline: t.heroHeadline,
           heroSub: t.heroSub,
           heroCta: t.heroCta,
+          collectionsTitle: t.collectionsTitle,
           storyImage: t.storyImage,
           storyTitle: t.storyTitle,
           storyBody: t.storyBody,
+          newsletterTitle: t.newsletterTitle,
+          newsletterBody: t.newsletterBody,
           footerText: t.footerText,
           socials: t.socials,
           sections: t.sections,
@@ -283,6 +286,87 @@ export function DesignClient({ initialStore }: { initialStore: Store }) {
             </div>
           </Card>
 
+          <Card className="space-y-5 p-5">
+            <h2 className="text-sm font-semibold text-ink">
+              Collections section
+            </h2>
+            <div className="space-y-1.5">
+              <Label htmlFor="collections-title">Heading</Label>
+              <Input
+                id="collections-title"
+                value={t.collectionsTitle}
+                onChange={(e) => patchTheme({ collectionsTitle: e.target.value })}
+                maxLength={60}
+                placeholder="Shop by collection"
+              />
+              <p className="text-xs text-ink-soft">
+                Add collection images on the Collections page.
+              </p>
+            </div>
+          </Card>
+
+          <Card className="space-y-5 p-5">
+            <h2 className="text-sm font-semibold text-ink">Brand story</h2>
+            <div className="space-y-1.5">
+              <Label htmlFor="story-title">Title</Label>
+              <Input
+                id="story-title"
+                value={t.storyTitle}
+                onChange={(e) => patchTheme({ storyTitle: e.target.value })}
+                maxLength={90}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="story-body">Story</Label>
+              <Textarea
+                id="story-body"
+                rows={4}
+                value={t.storyBody}
+                onChange={(e) => patchTheme({ storyBody: e.target.value })}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="story-image">Story image</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="story-image"
+                  value={t.storyImage}
+                  onChange={(e) => patchTheme({ storyImage: e.target.value })}
+                  placeholder="Paste a URL or upload"
+                  className="min-w-0 flex-1"
+                />
+                <ImageUploadButton
+                  label="Upload"
+                  onUploaded={(url) => patchTheme({ storyImage: url })}
+                />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="space-y-5 p-5">
+            <h2 className="text-sm font-semibold text-ink">Newsletter section</h2>
+            <div className="space-y-1.5">
+              <Label htmlFor="newsletter-title">Heading</Label>
+              <Input
+                id="newsletter-title"
+                value={t.newsletterTitle}
+                onChange={(e) => patchTheme({ newsletterTitle: e.target.value })}
+                maxLength={60}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="newsletter-body">Subtext</Label>
+              <Textarea
+                id="newsletter-body"
+                rows={2}
+                className="min-h-0"
+                value={t.newsletterBody}
+                onChange={(e) => patchTheme({ newsletterBody: e.target.value })}
+                maxLength={160}
+              />
+            </div>
+          </Card>
+
           <Card className="p-5">
             <h2 className="text-sm font-semibold text-ink">Sections</h2>
             <p className="mt-0.5 text-xs text-ink-soft">
@@ -371,10 +455,12 @@ export function DesignClient({ initialStore }: { initialStore: Store }) {
                 className="size-1.5 animate-pulse rounded-full bg-ok"
                 aria-hidden
               />
-              Live preview
+              Live preview — scroll to see the whole homepage
             </p>
             <BrowserFrame url={`${draft.slug}.shopleb.shop`}>
-              <StorePreview store={draft} />
+              <div className="max-h-[72vh] overflow-y-auto">
+                <StorePreview store={draft} />
+              </div>
             </BrowserFrame>
           </div>
         </div>

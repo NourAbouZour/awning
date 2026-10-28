@@ -95,21 +95,20 @@ export function StoreHeader() {
           {/* logo */}
           <Link
             href={base}
-            className="min-w-0 shrink"
+            className="flex min-w-0 shrink items-center gap-2.5"
             aria-label={`${store.name} home`}
           >
-            {store.logoUrl ? (
+            {store.logoUrl && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={store.logoUrl}
-                alt={store.name}
-                className="h-7 w-auto max-w-40 object-contain"
+                alt=""
+                className="h-8 w-auto max-w-28 shrink-0 object-contain"
               />
-            ) : (
-              <span className="sf-display truncate text-xl font-bold tracking-tight md:text-2xl">
-                {store.logoText}
-              </span>
             )}
+            <span className="sf-display truncate text-xl font-bold tracking-tight md:text-2xl">
+              {store.logoText}
+            </span>
           </Link>
 
           {/* desktop nav */}

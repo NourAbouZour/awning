@@ -16,9 +16,12 @@ export interface DesignInput {
     heroHeadline: string;
     heroSub: string;
     heroCta: string;
+    collectionsTitle: string;
     storyImage: string;
     storyTitle: string;
     storyBody: string;
+    newsletterTitle: string;
+    newsletterBody: string;
     footerText: string;
     socials: { instagram?: string; tiktok?: string; twitter?: string };
     sections: HomeSection[];
@@ -47,9 +50,12 @@ export async function saveDesign(input: DesignInput): Promise<{ error?: string }
         heroHeadline: t.heroHeadline,
         heroSub: t.heroSub,
         heroCta: t.heroCta,
+        collectionsTitle: t.collectionsTitle,
         storyImage: t.storyImage.startsWith("blob:") ? "" : t.storyImage,
         storyTitle: t.storyTitle,
         storyBody: t.storyBody,
+        newsletterTitle: t.newsletterTitle,
+        newsletterBody: t.newsletterBody,
         footerText: t.footerText,
         instagram: t.socials.instagram || null,
         tiktok: t.socials.tiktok || null,

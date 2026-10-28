@@ -26,12 +26,23 @@ export interface StoreTheme {
   heroHeadline: string;
   heroSub: string;
   heroCta: string;
+  collectionsTitle: string;
   storyImage: string;
   storyTitle: string;
   storyBody: string;
+  newsletterTitle: string;
+  newsletterBody: string;
   footerText: string;
   sections: HomeSection[];
   socials: { instagram?: string; tiktok?: string; twitter?: string };
+}
+
+/** One day's opening hours. Stored as a JSON array in Store.hours. */
+export interface DayHours {
+  day: string; // "Mon" … "Sun"
+  closed: boolean;
+  open: string; // "09:00"
+  close: string; // "18:00"
 }
 
 export interface ProductVariant {
@@ -81,9 +92,14 @@ export interface Store {
   contactEmail: string;
   phone: string;
   address: string;
+  city?: string;
+  district?: string;
+  mapsUrl?: string;
   hours: string;
   currency: string;
   shippingNote: string;
+  freeShipping?: number;
+  signupDiscountCode?: string;
   theme: StoreTheme;
   categories: Category[];
   products: Product[];

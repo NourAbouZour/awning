@@ -6,6 +6,7 @@ import { NewsletterForm } from "@/components/storefront/newsletter-form";
 import { ProductCarousel } from "@/components/storefront/product-carousel";
 import { getStoreBySlug } from "@/server/stores";
 import { Reveal } from "@/components/ui/motion";
+import { formatMoney } from "@/lib/utils";
 import type { HomeSectionId, Store } from "@/lib/types";
 
 export default async function StoreHomePage({
@@ -54,7 +55,7 @@ export default async function StoreHomePage({
 function Hero({ store }: { store: Store }) {
   const t = store.theme;
   return (
-    <section className="relative flex min-h-[70dvh] items-end overflow-hidden bg-sf-wash md:min-h-[82dvh]">
+    <section className="relative flex min-h-[70dvh] items-end overflow-hidden bg-neutral-900 md:min-h-[82dvh]">
       {t.heroImage && (
         <Image
           src={t.heroImage}
@@ -65,8 +66,14 @@ function Hero({ store }: { store: Store }) {
           className="object-cover"
         />
       )}
+      {/* Darken the backdrop so the white headline + subheadline stay legible,
+          including when no hero image is set. */}
       <div
-        className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/5"
+        className={
+          t.heroImage
+            ? "absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/5"
+            : "absolute inset-0 bg-gradient-to-t from-black/70 via-black/45 to-black/30"
+        }
         aria-hidden
       />
       <div className="relative mx-auto w-full max-w-7xl px-5 pb-14 pt-32 md:px-8 md:pb-20">
@@ -93,7 +100,9 @@ function Hero({ store }: { store: Store }) {
 function Collections({ store }: { store: Store }) {
   return (
     <section className="mx-auto max-w-7xl px-5 py-16 md:px-8 md:py-24">
-      <h2 className="sf-display text-3xl md:text-4xl">Shop by collection</h2>
+      <h2 className="sf-display text-3xl md:text-4xl">
+        {store.theme.collectionsTitle || "Shop by collection"}
+      </h2>
       <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {store.categories.map((c, i) => (
           <Link
@@ -166,11 +175,15 @@ function Story({ store }: { store: Store }) {
 }
 
 function Trust({ store }: { store: Store }) {
+  const freeShipBody =
+    store.freeShipping && store.freeShipping > 0
+      ? `On every order over ${formatMoney(store.freeShipping, store.currency)}.`
+      : store.shippingNote.split(".")[0] + ".";
   const items = [
     {
       icon: Truck,
       title: "Free shipping",
-      body: store.shippingNote.split(".")[0] + ".",
+      body: freeShipBody,
     },
     {
       icon: RefreshCcw,
@@ -209,11 +222,11 @@ function Newsletter({ store }: { store: Store }) {
     <section className="mx-auto max-w-7xl px-5 py-16 md:px-8 md:py-24">
       <div className="rounded-3xl bg-sf-wash px-6 py-14 text-center md:py-20">
         <h2 className="sf-display mx-auto max-w-xl text-3xl leading-tight md:text-4xl">
-          Be first to every drop
+          {store.theme.newsletterTitle || "Be first to every drop"}
         </h2>
         <p className="mx-auto mt-3 max-w-md text-sf-muted">
-          Join the {store.name} list for new releases and restocks. One or two
-          emails a month, never more.
+          {store.theme.newsletterBody ||
+            `Join the ${store.name} list for new releases and restocks. One or two emails a month, never more.`}
         </p>
         <div className="mt-7">
           <NewsletterForm />

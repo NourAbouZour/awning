@@ -48,7 +48,7 @@ export function StoreFooter({ store }: { store: Store }) {
           <div>
             <p className="sf-display text-xl font-bold">{store.name}</p>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-sf-muted">
-              {store.tagline}. {store.shippingNote}
+              {store.tagline}
             </p>
             <div className="mt-5 flex gap-3">
               {s.instagram && (

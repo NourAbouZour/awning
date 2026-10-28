@@ -14,7 +14,6 @@ import {
   ImagePlus,
   Loader2,
   PartyPopper,
-  Upload,
   X,
 } from "lucide-react";
 import { AwningLogo } from "@/components/awning-logo";
@@ -22,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUploadButton } from "@/components/ui/image-upload-button";
 import { BrowserFrame } from "@/components/marketing/browser-frame";
 import { StorePreview } from "@/components/marketing/store-preview";
 import { FONT_PAIRINGS, type FontPairingId } from "@/lib/fonts";
@@ -43,6 +43,7 @@ interface WizardState {
   heroImage: string;
   heroHeadline: string;
   heroSub: string;
+  discountCode: string;
   productTitle: string;
   productPrice: string;
   productImage: string;
@@ -99,6 +100,7 @@ export default function OnboardingPage() {
     heroImage: HERO_OPTIONS[0],
     heroHeadline: "Made with care. Shipped with speed.",
     heroSub: "Small-batch goods from our workshop to your door.",
+    discountCode: "",
     productTitle: "",
     productPrice: "",
     productImage: PRODUCT_IMAGE_OPTIONS[0],
@@ -151,9 +153,13 @@ export default function OnboardingPage() {
         heroHeadline: state.heroHeadline || "Made with care. Shipped with speed.",
         heroSub: state.heroSub,
         heroCta: "Shop now",
+        collectionsTitle: "Shop by collection",
         storyImage: "",
         storyTitle: "",
         storyBody: "",
+        newsletterTitle: "Be first to every drop",
+        newsletterBody:
+          "Join the list for new releases and restocks. One or two emails a month, never more.",
         footerText: "",
         sections: [],
         socials: {},
@@ -218,6 +224,7 @@ export default function OnboardingPage() {
         heroImage: state.heroImage,
         heroHeadline: state.heroHeadline,
         heroSub: state.heroSub,
+        discountCode: state.discountCode,
         productTitle: state.productTitle,
         productPrice: state.productPrice,
         productImage: state.productImage,
@@ -334,6 +341,19 @@ export default function OnboardingPage() {
                     )}
                   </div>
                 </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="discount-code">Discount code (optional)</Label>
+                  <Input
+                    id="discount-code"
+                    placeholder="Got a code from us? Enter it here"
+                    value={state.discountCode}
+                    onChange={(e) => patch({ discountCode: e.target.value })}
+                  />
+                  <p className="text-xs text-ink-soft">
+                    If you were given a code, add it and we&apos;ll apply your
+                    discount.
+                  </p>
+                </div>
               </div>
             </StepShell>
           )}
@@ -363,20 +383,15 @@ export default function OnboardingPage() {
                       </Button>
                     </div>
                   ) : (
-                    <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-line-strong bg-paper px-4 py-4 text-sm text-ink-soft transition-colors hover:border-green hover:text-ink-body">
-                      <Upload className="size-4" />
-                      Upload a PNG or SVG — or skip and we&apos;ll use your
-                      store name
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="sr-only"
-                        onChange={(e) => {
-                          const f = e.target.files?.[0];
-                          if (f) patch({ logoUrl: URL.createObjectURL(f) });
-                        }}
+                    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-dashed border-line-strong bg-paper px-4 py-4">
+                      <ImageUploadButton
+                        label="Upload a logo"
+                        onUploaded={(url) => patch({ logoUrl: url })}
                       />
-                    </label>
+                      <span className="text-sm text-ink-soft">
+                        A PNG or JPG — or skip and we&apos;ll use your store name.
+                      </span>
+                    </div>
                   )}
                 </div>
 
@@ -486,19 +501,12 @@ export default function OnboardingPage() {
                       </button>
                     ))}
                   </div>
-                  <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-green underline-offset-4 hover:underline">
-                    <Upload className="size-3.5" />
-                    Or upload your own
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="sr-only"
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) patch({ heroImage: URL.createObjectURL(f) });
-                      }}
+                  <div className="flex items-center gap-2">
+                    <ImageUploadButton
+                      label="Or upload your own"
+                      onUploaded={(url) => patch({ heroImage: url })}
                     />
-                  </label>
+                  </div>
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="headline">Headline</Label>
@@ -576,20 +584,10 @@ export default function OnboardingPage() {
                         />
                       </button>
                     ))}
-                    <label className="flex size-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-line-strong text-xs text-ink-soft transition-colors hover:border-green hover:text-ink-body">
-                      <Upload className="size-4" />
-                      Upload
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="sr-only"
-                        onChange={(e) => {
-                          const f = e.target.files?.[0];
-                          if (f)
-                            patch({ productImage: URL.createObjectURL(f) });
-                        }}
-                      />
-                    </label>
+                    <ImageUploadButton
+                      label="Upload"
+                      onUploaded={(url) => patch({ productImage: url })}
+                    />
                   </div>
                 </div>
               </div>

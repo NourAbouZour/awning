@@ -12,6 +12,7 @@ export interface MerchantRow {
   storeName: string | null;
   storeSlug: string | null;
   productCount: number;
+  discountCode: string | null;
 }
 
 export async function listMerchants(): Promise<MerchantRow[]> {
@@ -22,6 +23,7 @@ export async function listMerchants(): Promise<MerchantRow[]> {
         select: {
           name: true,
           slug: true,
+          signupDiscountCode: true,
           _count: { select: { products: true } },
         },
       },
@@ -39,6 +41,7 @@ export async function listMerchants(): Promise<MerchantRow[]> {
     storeName: u.store?.name ?? null,
     storeSlug: u.store?.slug ?? null,
     productCount: u.store?._count.products ?? 0,
+    discountCode: u.store?.signupDiscountCode ?? null,
   }));
 }
 

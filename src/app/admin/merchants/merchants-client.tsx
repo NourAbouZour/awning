@@ -98,6 +98,13 @@ export function MerchantsClient({ merchants }: { merchants: MerchantRow[] }) {
                       No store yet
                     </span>
                   )}
+                  {m.discountCode && (
+                    <p className="mt-1">
+                      <span className="inline-flex items-center gap-1 rounded-md bg-green-wash px-2 py-0.5 text-xs font-medium text-green">
+                        Discount code: {m.discountCode}
+                      </span>
+                    </p>
+                  )}
                 </div>
 
                 {/* plan */}
