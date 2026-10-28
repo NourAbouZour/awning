@@ -41,8 +41,6 @@ export default function AuthLayout({
             </footer>
           </blockquote>
           <div className="flex items-center gap-6 text-sm text-white/70">
-            <span>2,400 shops opened this month</span>
-            <span aria-hidden>·</span>
             <span>Your first month is free</span>
           </div>
         </div>

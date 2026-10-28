@@ -63,11 +63,7 @@ function Hero({ stores }: { stores: Store[] }) {
     <section className="relative overflow-hidden">
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-20 pt-14 md:grid-cols-[1.05fr_1fr] md:px-8 md:pb-28 md:pt-20">
         <div className="animate-fade-up">
-          <p className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-paper px-3.5 py-1.5 text-[13px] text-ink-body">
-            <span className="size-1.5 rounded-full bg-ok" aria-hidden />
-            2,400 shops opened this month
-          </p>
-          <h1 className="mt-6 font-display text-[44px] font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-7xl">
+          <h1 className="font-display text-[44px] font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-7xl">
             Put up your shop.
           </h1>
           <p className="mt-5 max-w-md text-lg leading-relaxed text-ink-body">
