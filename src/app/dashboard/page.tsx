@@ -4,7 +4,6 @@ import {
   ArrowRight,
   ArrowUpRight,
   Check,
-  CreditCard,
   Globe,
   Package,
   Palette,
@@ -112,7 +111,7 @@ export default async function DashboardHome() {
         <Card className="p-5">
           <h2 className="text-sm font-semibold text-ink">Finish setting up</h2>
           <p className="mt-0.5 text-xs text-ink-soft">
-            3 of 5 done, almost there.
+            3 of 4 done, almost there.
           </p>
           <ul className="mt-4 space-y-1">
             {[
@@ -120,16 +119,10 @@ export default async function DashboardHome() {
               { label: "Pick your look", done: true, icon: Palette },
               { label: "Add your first product", done: true, icon: Package },
               {
-                label: "Connect Stripe to get paid",
-                done: false,
-                icon: CreditCard,
-                href: "/dashboard/settings",
-              },
-              {
                 label: "Connect a custom domain",
                 done: false,
                 icon: Globe,
-                href: "/dashboard/settings",
+                href: "/dashboard/custom-domain",
               },
             ].map((item) => (
               <li key={item.label}>

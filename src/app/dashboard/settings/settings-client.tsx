@@ -2,9 +2,8 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import { CreditCard, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Card, PageHeader } from "@/components/dashboard/page-header";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -379,35 +378,6 @@ export function SettingsClient({
             <p className="text-xs text-ink-soft">
               Shown to shoppers on product pages and at checkout.
             </p>
-          </div>
-        </Card>
-
-        <Card className="p-5">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <span className="flex size-10 items-center justify-center rounded-lg bg-[#635bff]/10">
-                <CreditCard className="size-5 text-[#635bff]" />
-              </span>
-              <div>
-                <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
-                  Stripe payouts
-                  <Badge variant="amber">Not connected</Badge>
-                </h2>
-                <p className="text-xs text-ink-soft">
-                  Online card payments aren&apos;t enabled in this build -
-                  checkout records orders directly.
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="dark"
-              size="sm"
-              onClick={() =>
-                toast.info("Card payments aren't enabled in this build.")
-              }
-            >
-              Connect Stripe
-            </Button>
           </div>
         </Card>
       </div>
