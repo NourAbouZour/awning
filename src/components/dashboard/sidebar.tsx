@@ -120,7 +120,7 @@ function StoreFooter({ store }: { store: SidebarStore }) {
         <span className="flex-1">
           <span className="block font-medium text-ink">{store.name}</span>
           <span className="block text-[11px] text-ink-soft">
-            {store.slug}.awning.shop
+            {store.slug}.shopleb.shop
           </span>
         </span>
         <ExternalLink className="size-3.5 text-ink-soft" />
@@ -142,7 +142,7 @@ export function DashboardSidebar({ store, unread }: SidebarProps) {
   return (
     <aside className="hidden w-60 shrink-0 flex-col border-r border-line bg-paper lg:flex">
       <div className="flex h-16 items-center px-6">
-        <Link href="/" aria-label="Awning home">
+        <Link href="/" aria-label="Shopleb home">
           <AwningLogo size="sm" />
         </Link>
       </div>

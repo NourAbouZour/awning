@@ -10,7 +10,7 @@ export default function AuthLayout({
     <div className="grid min-h-dvh bg-canvas lg:grid-cols-[1fr_1fr]">
       {/* form side */}
       <div className="flex flex-col px-5 py-6 sm:px-10">
-        <Link href="/" aria-label="Awning home" className="w-fit">
+        <Link href="/" aria-label="Shopleb home" className="w-fit">
           <AwningLogo />
         </Link>
         <div className="flex flex-1 items-center justify-center py-10">

@@ -5,11 +5,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Awning — Put up your shop",
-    template: "%s · Awning",
+    default: "Shopleb — Put up your shop",
+    template: "%s · Shopleb",
   },
   description:
-    "Awning gives anyone a beautiful online store in minutes. Add products, pick your look, and start selling.",
+    "Shopleb gives anyone a beautiful online store in minutes. Add products, pick your look, and start selling.",
 };
 
 export default function RootLayout({

@@ -373,7 +373,7 @@ export function DesignClient({ initialStore }: { initialStore: Store }) {
               />
               Live preview
             </p>
-            <BrowserFrame url={`${draft.slug}.awning.shop`}>
+            <BrowserFrame url={`${draft.slug}.shopleb.shop`}>
               <StorePreview store={draft} />
             </BrowserFrame>
           </div>

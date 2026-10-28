@@ -73,7 +73,7 @@ export default function SignupPage() {
       </form>
 
       <p className="mt-6 text-center text-sm text-ink-soft">
-        Already selling on Awning?{" "}
+        Already selling on Shopleb?{" "}
         <Link
           href="/login"
           className="font-medium text-green underline-offset-4 hover:underline"

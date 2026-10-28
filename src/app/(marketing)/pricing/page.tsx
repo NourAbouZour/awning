@@ -8,7 +8,7 @@ import { PricingContactForm } from "./contact-form";
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Awning is free while you build your store. One simple monthly subscription when you're ready — no per-sale fees, ever.",
+    "Shopleb is free while you build your store. One simple monthly subscription when you're ready — no per-sale fees, ever.",
 };
 
 export default function PricingPage() {

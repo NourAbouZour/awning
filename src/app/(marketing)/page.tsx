@@ -24,9 +24,9 @@ import { Reveal, Stagger, StaggerItem } from "@/components/ui/motion";
 import type { Store } from "@/lib/types";
 
 export const metadata: Metadata = {
-  title: "Awning — Put up your shop",
+  title: "Shopleb — Put up your shop",
   description:
-    "Awning gives anyone a beautiful online store in minutes. Add products, pick your look, and start selling — no code, no designer, no headache.",
+    "Shopleb gives anyone a beautiful online store in minutes. Add products, pick your look, and start selling — no code, no designer, no headache.",
 };
 
 // Reads live stores from the database for the example previews.
@@ -68,7 +68,7 @@ function Hero({ stores }: { stores: Store[] }) {
             2,400 shops opened this month
           </p>
           <h1 className="mt-6 font-display text-[44px] font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-7xl">
-            Put up your awning.
+            Put up your shop.
           </h1>
           <p className="mt-5 max-w-md text-lg leading-relaxed text-ink-body">
             The simplest way to open a real online store. Add your products,
@@ -97,14 +97,14 @@ function Hero({ stores }: { stores: Store[] }) {
         <div className="relative animate-fade-up [animation-delay:150ms]">
           {secondary && (
             <div className="absolute -right-6 -top-6 hidden w-[76%] rotate-2 opacity-90 lg:block">
-              <BrowserFrame url={`${secondary.slug}.awning.shop`}>
+              <BrowserFrame url={`${secondary.slug}.shopleb.shop`}>
                 <StorePreview store={secondary} />
               </BrowserFrame>
             </div>
           )}
           {primary && (
             <div className="relative lg:mt-24 lg:w-[88%]">
-              <BrowserFrame url={`${primary.slug}.awning.shop`}>
+              <BrowserFrame url={`${primary.slug}.shopleb.shop`}>
                 <StorePreview store={primary} />
               </BrowserFrame>
             </div>
@@ -133,7 +133,7 @@ function ExampleStores({ stores }: { stores: Store[] }) {
             One template. Your brand all over it.
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-ink-body">
-            Every Awning store runs the same carefully-built storefront. Your
+            Every Shopleb store runs the same carefully-built storefront. Your
             logo, colors, type, and photos make it unmistakably yours. These
             are live — click through and poke around.
           </p>
@@ -236,7 +236,7 @@ function Features() {
             Everything a real shop needs. Nothing it doesn&apos;t.
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-ink-body">
-            Awning is deliberately small: the tools that sell products, kept
+            Shopleb is deliberately small: the tools that sell products, kept
             sharp, and nothing to configure that doesn&apos;t matter.
           </p>
         </div>
@@ -407,7 +407,7 @@ function ChartVignette() {
 const steps = [
   {
     title: "Name your store",
-    body: "Type a name, get your own address like yourshop.awning.shop — checked live.",
+    body: "Type a name, get your own address like yourshop.shopleb.shop — checked live.",
   },
   {
     title: "Make it yours",
@@ -468,7 +468,7 @@ function Steps() {
 const testimonials = [
   {
     quote:
-      "I'd been quoted $8,000 for a website. I built my store on Awning during my lunch break and sold two prints before dinner.",
+      "I'd been quoted $8,000 for a website. I built my store on Shopleb during my lunch break and sold two prints before dinner.",
     name: "Renata Silva",
     store: "Silva Prints, Miami",
   },
@@ -550,11 +550,11 @@ const faqs = [
   },
   {
     q: "How do I get paid?",
-    a: "You connect your own Stripe account during setup (it takes a couple of minutes). Customers pay by card at checkout and the money goes directly to you — Awning never holds your funds.",
+    a: "You connect your own Stripe account during setup (it takes a couple of minutes). Customers pay by card at checkout and the money goes directly to you — Shopleb never holds your funds.",
   },
   {
     q: "Can I use my own domain name?",
-    a: "Every store gets a free address like yourshop.awning.shop the moment it goes live. Connecting a custom domain you already own is supported on paid plans.",
+    a: "Every store gets a free address like yourshop.shopleb.shop the moment it goes live. Connecting a custom domain you already own is supported on paid plans.",
   },
   {
     q: "What does it cost to start?",
@@ -577,7 +577,7 @@ function Faq() {
           <p className="mt-4 text-ink-soft">
             Something else on your mind?{" "}
             <a
-              href="mailto:hello@awning.shop"
+              href="mailto:hello@shopleb.shop"
               className="font-medium text-green underline-offset-4 hover:underline"
             >
               Write to us

@@ -4,7 +4,7 @@ import { LayoutDashboard, Inbox, LogOut, Store, Shield } from "lucide-react";
 import { requireSuperadmin } from "@/lib/auth";
 import { logout } from "@/app/(auth)/actions";
 
-export const metadata: Metadata = { title: "Admin · Awning" };
+export const metadata: Metadata = { title: "Admin · Shopleb" };
 export const dynamic = "force-dynamic";
 
 const nav = [
@@ -25,7 +25,7 @@ export default async function AdminLayout({
       <aside className="hidden w-60 shrink-0 flex-col border-r border-line bg-ink text-white/90 lg:flex">
         <div className="flex h-16 items-center gap-2 px-6 font-display text-lg font-bold text-white">
           <Shield className="size-5" />
-          Awning Admin
+          Shopleb Admin
         </div>
         <nav className="flex flex-col gap-0.5 px-3">
           {nav.map((item) => (

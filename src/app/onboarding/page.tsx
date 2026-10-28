@@ -236,7 +236,7 @@ export default function OnboardingPage() {
     <div className="flex min-h-dvh flex-col bg-canvas">
       {/* top bar */}
       <header className="flex h-16 items-center justify-between border-b border-line bg-canvas px-5 md:px-8">
-        <Link href="/" aria-label="Awning home">
+        <Link href="/" aria-label="Shopleb home">
           <AwningLogo size="sm" />
         </Link>
         <ol className="hidden items-center gap-2 md:flex" aria-label="Setup progress">
@@ -310,7 +310,7 @@ export default function OnboardingPage() {
                       }}
                     />
                     <span className="border-l border-line bg-canvas px-3 text-sm text-ink-soft">
-                      .awning.shop
+                      .shopleb.shop
                     </span>
                   </div>
                   <div className="min-h-5 text-xs" aria-live="polite">
@@ -323,7 +323,7 @@ export default function OnboardingPage() {
                     {slugStatus === "available" && (
                       <span className="flex items-center gap-1.5 text-ok">
                         <Check className="size-3" />
-                        {state.slug}.awning.shop is yours if you want it
+                        {state.slug}.shopleb.shop is yours if you want it
                       </span>
                     )}
                     {slugStatus === "taken" && (
@@ -607,7 +607,7 @@ export default function OnboardingPage() {
               <p className="mt-3 max-w-md text-lg leading-relaxed text-ink-body">
                 It&apos;s live right now at{" "}
                 <span className="font-medium text-ink">
-                  {createdSlug ?? state.slug}.awning.shop
+                  {createdSlug ?? state.slug}.shopleb.shop
                 </span>
                 . Share the link, or head to your dashboard to add the rest of
                 your products.
@@ -674,7 +674,7 @@ export default function OnboardingPage() {
               Live preview — updates as you choose
             </p>
             <BrowserFrame
-              url={`${state.slug || "your-store"}.awning.shop`}
+              url={`${state.slug || "your-store"}.shopleb.shop`}
               className="transition-all duration-300"
             >
               <StorePreview store={previewStore} />

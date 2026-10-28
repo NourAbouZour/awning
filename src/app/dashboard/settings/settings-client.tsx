@@ -143,7 +143,7 @@ export function SettingsClient({
                   onChange={(e) => setSlug(slugify(e.target.value))}
                 />
                 <span className="border-l border-line bg-canvas px-3 text-sm text-ink-soft">
-                  .awning.shop
+                  .shopleb.shop
                 </span>
               </div>
               <p className="text-xs text-ink-soft">

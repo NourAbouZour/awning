@@ -140,7 +140,7 @@ export function StoreFooter({ store }: { store: Store }) {
           <p>
             Built on{" "}
             <Link href="/" className="underline-offset-4 hover:underline">
-              Awning
+              Shopleb
             </Link>
           </p>
         </div>

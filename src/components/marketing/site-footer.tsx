@@ -22,7 +22,7 @@ const columns = [
     title: "Company",
     links: [
       { label: "About", href: "/#story" },
-      { label: "Contact", href: "mailto:hello@awning.shop" },
+      { label: "Contact", href: "mailto:hello@shopleb.shop" },
     ],
   },
 ];
@@ -60,7 +60,7 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="mt-12 flex flex-col gap-2 border-t border-line pt-6 text-xs text-ink-soft sm:flex-row sm:justify-between">
-          <p>© 2026 Awning, Inc. A demo platform.</p>
+          <p>© 2026 Shopleb, Inc. A demo platform.</p>
           <p>Open for business, everywhere.</p>
         </div>
       </div>

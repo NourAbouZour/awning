@@ -40,7 +40,7 @@ export function SiteHeader() {
       )}
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 md:px-8">
-        <Link href="/" className="shrink-0" aria-label="Awning home">
+        <Link href="/" className="shrink-0" aria-label="Shopleb home">
           <AwningLogo />
         </Link>
 
