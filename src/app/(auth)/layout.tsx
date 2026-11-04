@@ -36,13 +36,8 @@ export default function AuthLayout({
               “I built my store during my lunch break and sold two prints
               before dinner.”
             </p>
-            <footer className="mt-6 text-white/75">
-              Renata Silva, Silva Prints, Miami
-            </footer>
           </blockquote>
-          <div className="flex items-center gap-6 text-sm text-white/70">
-            <span>Your first month is free</span>
-          </div>
+          <div />
         </div>
       </div>
     </div>

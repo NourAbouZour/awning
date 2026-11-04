@@ -9,12 +9,11 @@ import { cn } from "@/lib/utils";
 const tiers = [
   {
     name: "Stall",
-    blurb: "First month free. For your first products and your first sales.",
+    blurb: "For your first products and your first sales.",
     monthly: 0,
     yearly: 0,
     cta: "Start free",
     features: [
-      "First month free",
       "Full storefront & checkout",
       "Up to 5 products",
       "yourshop.shopleb.shop address",

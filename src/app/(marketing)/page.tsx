@@ -85,7 +85,7 @@ function Hero({ stores }: { stores: Store[] }) {
             )}
           </div>
           <p className="mt-4 text-sm text-ink-soft">
-            No card needed. Your first month is free.
+            No card needed.
           </p>
         </div>
 
@@ -464,12 +464,6 @@ function Steps() {
 const testimonials = [
   {
     quote:
-      "I'd been quoted $8,000 for a website. I built my store on Shopleb during my lunch break and sold two prints before dinner.",
-    name: "Renata Silva",
-    store: "Silva Prints, Miami",
-  },
-  {
-    quote:
       "The part that got me: I picked a color and the whole store just… matched. Buttons, badges, everything. I never touched a setting twice.",
     name: "Tom Osei",
     store: "Osei Coffee Goods, Chicago",
@@ -489,7 +483,7 @@ function Testimonials() {
         <h2 className="max-w-2xl font-display text-3xl font-bold tracking-tight text-ink md:text-5xl">
           Shopkeepers first. Software second.
         </h2>
-        <div className="mt-12 grid gap-5 md:grid-cols-3">
+        <div className="mt-12 grid gap-5 md:grid-cols-2">
           {testimonials.map((t) => (
             <figure
               key={t.name}
@@ -522,8 +516,7 @@ function PricingStrip() {
           </h2>
           <p className="mt-2 text-ink-body">
             Every plan includes the full storefront, checkout, and dashboard.
-            No per-sale fees, just a flat monthly subscription, and your first
-            month is free.
+            No per-sale fees, just a flat monthly subscription.
           </p>
         </div>
         <Button size="lg" variant="dark" asChild>
@@ -554,7 +547,7 @@ const faqs = [
   },
   {
     q: "What does it cost to start?",
-    a: "Nothing. Building your store, adding products, and publishing it are free, and your first month is free too. After that it's one simple monthly subscription, no per-sale fees. See the pricing page for the exact numbers.",
+    a: "Nothing. Building your store, adding products, and publishing it are free. When you're ready to grow, it's one simple monthly subscription, no per-sale fees. See the pricing page for the exact numbers.",
   },
   {
     q: "Can I move my store somewhere else later?",
