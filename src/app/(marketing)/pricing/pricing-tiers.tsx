@@ -23,8 +23,8 @@ const tiers = [
   {
     name: "Shopfront",
     blurb: "For a growing shop that's found its customers.",
-    monthly: 19,
-    yearly: 15,
+    monthly: 10,
+    yearly: 8,
     cta: "Start with Shopfront",
     highlighted: true,
     features: [
@@ -40,8 +40,8 @@ const tiers = [
   {
     name: "Arcade",
     blurb: "For established brands that want the full toolkit.",
-    monthly: 49,
-    yearly: 39,
+    monthly: 30,
+    yearly: 24,
     cta: "Start with Arcade",
     features: [
       "Everything in Shopfront",
