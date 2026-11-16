@@ -9,8 +9,18 @@ import { ShoppingBag } from "lucide-react";
  * variables the real storefront uses, scaled down. Renders the full page
  * (hero, collections, products, story, newsletter, footer) so the design
  * editor and onboarding previews show everything, not just the top.
+ *
+ * `firstScreen` stops after the hero (or after the product row when the
+ * store has its hero switched off), like a browser window that hasn't been
+ * scrolled. The landing page uses it to keep its cover compact.
  */
-export function StorePreview({ store }: { store: Store }) {
+export function StorePreview({
+  store,
+  firstScreen = false,
+}: {
+  store: Store;
+  firstScreen?: boolean;
+}) {
   const t = store.theme;
   const products = store.products
     .filter((p) => p.status === "active")
@@ -18,13 +28,20 @@ export function StorePreview({ store }: { store: Store }) {
   const collections = store.categories.filter((c) => c.image).slice(0, 3);
   const enabled = (id: string) =>
     !t.sections?.length || t.sections.some((s) => s.id === id && s.enabled);
+  const hasHero = enabled("hero");
+  // Below-the-fold sections; the first screen shows products only as a
+  // stand-in when there is no hero to show.
+  const showRest = !firstScreen;
+  const showProducts = showRest || !hasHero;
 
   return (
     <div className="storefront text-sf-ink" style={themeStyle(t)}>
       {/* announcement */}
-      <div className="bg-sf-brand px-3 py-1.5 text-center text-[10px] font-medium text-sf-on-brand">
-        {t.announcement}
-      </div>
+      {t.showAnnouncement !== false && t.announcement?.trim() && (
+        <div className="bg-sf-brand px-3 py-1.5 text-center text-[10px] font-medium text-sf-on-brand">
+          {t.announcement}
+        </div>
+      )}
       {/* header */}
       <div className="flex items-center justify-between border-b border-sf-line bg-sf-bg px-4 py-2.5">
         <span className="flex items-center gap-1.5">
@@ -53,7 +70,7 @@ export function StorePreview({ store }: { store: Store }) {
       </div>
 
       {/* hero */}
-      {enabled("hero") && (
+      {hasHero && (
         <div className="relative aspect-[16/9] overflow-hidden bg-neutral-900">
           {t.heroImage && (
             <Image
@@ -89,7 +106,7 @@ export function StorePreview({ store }: { store: Store }) {
       )}
 
       {/* collections */}
-      {enabled("collections") && collections.length > 0 && (
+      {showRest && enabled("collections") && collections.length > 0 && (
         <div className="bg-sf-bg px-3.5 pt-3.5">
           <p className="sf-display text-xs font-semibold">
             {t.collectionsTitle || "Shop by collection"}
@@ -118,6 +135,7 @@ export function StorePreview({ store }: { store: Store }) {
       )}
 
       {/* products */}
+      {showProducts && (
       <div className="grid grid-cols-3 gap-2.5 bg-sf-bg p-3.5">
         {products.map((p) => (
           <div key={p.id}>
@@ -138,9 +156,10 @@ export function StorePreview({ store }: { store: Store }) {
           </div>
         ))}
       </div>
+      )}
 
       {/* story */}
-      {enabled("story") && (t.storyTitle || t.storyImage) && (
+      {showRest && enabled("story") && (t.storyTitle || t.storyImage) && (
         <div className="grid grid-cols-2 items-center gap-3 bg-sf-wash p-3.5">
           <div className="relative aspect-[4/3] overflow-hidden rounded-md bg-sf-bg">
             {t.storyImage && (
@@ -166,7 +185,7 @@ export function StorePreview({ store }: { store: Store }) {
       )}
 
       {/* newsletter */}
-      {enabled("newsletter") && (
+      {showRest && enabled("newsletter") && (
         <div className="bg-sf-bg p-3.5">
           <div className="rounded-lg bg-sf-wash px-3 py-4 text-center">
             <p className="sf-display text-xs font-semibold">
@@ -183,9 +202,11 @@ export function StorePreview({ store }: { store: Store }) {
       )}
 
       {/* footer */}
-      <div className="border-t border-sf-line bg-sf-bg px-3.5 py-2.5 text-[8px] text-sf-muted">
-        {t.footerText || store.name}
-      </div>
+      {showRest && (
+        <div className="border-t border-sf-line bg-sf-bg px-3.5 py-2.5 text-[8px] text-sf-muted">
+          {t.footerText || store.name}
+        </div>
+      )}
     </div>
   );
 }

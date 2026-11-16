@@ -90,19 +90,21 @@ function Hero({ stores }: { stores: Store[] }) {
           </p>
         </div>
 
-        {/* Two storefronts, same template */}
+        {/* Two storefronts, same template. Each preview shows only the
+            store's first screen, so the pair stays one compact picture
+            beside the headline instead of a page-long column. */}
         <div className="relative animate-fade-up [animation-delay:150ms]">
           {secondary && (
-            <div className="absolute -right-6 -top-6 hidden w-[76%] rotate-2 opacity-90 lg:block">
+            <div className="absolute -right-6 -top-6 hidden w-[76%] rotate-2 lg:block">
               <BrowserFrame url={`shopleb.com/s/${secondary.slug}`}>
-                <StorePreview store={secondary} />
+                <StorePreview store={secondary} firstScreen />
               </BrowserFrame>
             </div>
           )}
           {primary && (
-            <div className="relative lg:mt-24 lg:w-[88%]">
+            <div className="relative lg:mt-20 lg:w-[88%]">
               <BrowserFrame url={`shopleb.com/s/${primary.slug}`}>
-                <StorePreview store={primary} />
+                <StorePreview store={primary} firstScreen />
               </BrowserFrame>
             </div>
           )}

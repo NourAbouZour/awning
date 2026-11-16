@@ -1,15 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Check,
-  Globe,
-  Package,
-  Palette,
-} from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Card, PageHeader } from "@/components/dashboard/page-header";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
+import {
+  LOW_STOCK_AT,
+  LowStockChart,
+  lowStockItems,
+} from "@/components/dashboard/low-stock-chart";
 import { OrderStatusBadge } from "@/components/dashboard/status-badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,13 +21,19 @@ import {
 import { requireCurrentStore } from "@/lib/auth";
 import { listOrders } from "@/server/orders";
 import { getRevenueSeries } from "@/server/orders";
+import { listProducts } from "@/server/products";
 import { Stagger, StaggerItem, AnimatedNumber } from "@/components/ui/motion";
 import { formatDateTime, formatMoney } from "@/lib/utils";
 
 export default async function DashboardHome() {
   const currentStore = await requireCurrentStore();
-  const orders = await listOrders(currentStore.id);
-  const revenueSeries = await getRevenueSeries(currentStore.id);
+  const [orders, revenueSeries, products] = await Promise.all([
+    listOrders(currentStore.id),
+    getRevenueSeries(currentStore.id),
+    listProducts(currentStore.id),
+  ]);
+  const lowStock = lowStockItems(products);
+  const soldOut = lowStock.filter((i) => i.units === 0).length;
   const today = revenueSeries[revenueSeries.length - 1];
   const week = revenueSeries.slice(-7);
   const prevWeek = revenueSeries.slice(-14, -7);
@@ -107,47 +111,27 @@ export default async function DashboardHome() {
           <RevenueChart data={revenueSeries} />
         </Card>
 
-        {/* setup checklist */}
+        {/* low stock */}
         <Card className="p-5">
-          <h2 className="text-sm font-semibold text-ink">Finish setting up</h2>
-          <p className="mt-0.5 text-xs text-ink-soft">
-            3 of 4 done, almost there.
-          </p>
-          <ul className="mt-4 space-y-1">
-            {[
-              { label: "Name your store", done: true, icon: Check },
-              { label: "Pick your look", done: true, icon: Palette },
-              { label: "Add your first product", done: true, icon: Package },
-              {
-                label: "Connect a custom domain",
-                done: false,
-                icon: Globe,
-                href: "/dashboard/custom-domain",
-              },
-            ].map((item) => (
-              <li key={item.label}>
-                {item.done ? (
-                  <span className="flex items-center gap-3 rounded-lg px-2.5 py-2 text-[13px] text-ink-soft line-through decoration-ink-soft/40">
-                    <span className="flex size-5 items-center justify-center rounded-full bg-ok-wash">
-                      <Check className="size-3 text-ok" />
-                    </span>
-                    {item.label}
-                  </span>
-                ) : (
-                  <Link
-                    href={item.href ?? "#"}
-                    className="group flex items-center gap-3 rounded-lg px-2.5 py-2 text-[13px] font-medium text-ink-body transition-colors hover:bg-canvas"
-                  >
-                    <span className="flex size-5 items-center justify-center rounded-full border border-line-strong bg-paper">
-                      <item.icon className="size-3 text-ink-soft" />
-                    </span>
-                    {item.label}
-                    <ArrowRight className="ml-auto size-3.5 text-ink-soft opacity-0 transition-opacity group-hover:opacity-100" />
-                  </Link>
-                )}
-              </li>
-            ))}
-          </ul>
+          <div className="mb-3 flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold text-ink">Low stock</h2>
+              <p className="text-xs text-ink-soft">
+                {lowStock.length === 0
+                  ? `Units left, ${LOW_STOCK_AT} or fewer`
+                  : `${lowStock.length} ${lowStock.length === 1 ? "item" : "items"} at ${LOW_STOCK_AT} or fewer${
+                      soldOut > 0 ? `, ${soldOut} sold out` : ""
+                    }`}
+              </p>
+            </div>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/dashboard/products">
+                Products
+                <ArrowRight className="size-3.5" />
+              </Link>
+            </Button>
+          </div>
+          <LowStockChart items={lowStock} />
         </Card>
       </div>
 
@@ -213,7 +197,7 @@ export default async function DashboardHome() {
                     <OrderStatusBadge status={o.status} />
                   </TableCell>
                   <TableCell className="text-right font-medium text-ink">
-                    {formatMoney(o.total)}
+                    {formatMoney(o.total, currentStore.currency)}
                   </TableCell>
                 </TableRow>
               ))}
