@@ -12,7 +12,14 @@ import { markSupportHandled } from "@/app/admin/actions";
 import type { SupportRow } from "@/server/admin";
 import { formatDateTime } from "@/lib/utils";
 
-export function AdminMessagesClient({ messages }: { messages: SupportRow[] }) {
+export function AdminMessagesClient({
+  messages,
+  top,
+}: {
+  messages: SupportRow[];
+  /** Shown between the page title and the list of enquiries. */
+  top?: React.ReactNode;
+}) {
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
 
@@ -28,8 +35,9 @@ export function AdminMessagesClient({ messages }: { messages: SupportRow[] }) {
     <>
       <PageHeader
         title="Messages"
-        sub="Enquiries from the pricing page contact form."
+        sub="Forgot-password requests and enquiries from the pricing page contact form."
       />
+      {top}
 
       {messages.length === 0 ? (
         <EmptyState

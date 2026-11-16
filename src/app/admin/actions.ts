@@ -133,10 +133,12 @@ export async function generateResetCode(
   await requireSuperadmin();
   const request = await prisma.passwordReset.findUnique({
     where: { id: requestId },
-    select: { id: true, usedAt: true },
+    select: { id: true, usedAt: true, userId: true },
   });
   if (!request || request.usedAt)
     return { error: "This request is no longer open." };
+  if (!request.userId)
+    return { error: "No account uses this email, so there is nothing to reset." };
 
   const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
   const expiresAt = new Date(Date.now() + RESET_CODE_MINUTES * 60 * 1000);
@@ -156,5 +158,5 @@ export async function generateResetCode(
 export async function dismissPasswordReset(requestId: string): Promise<void> {
   await requireSuperadmin();
   await prisma.passwordReset.deleteMany({ where: { id: requestId } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }

@@ -162,9 +162,11 @@ export async function listPlanRequests(): Promise<PlanRequestRow[]> {
 
 export interface PasswordResetRow {
   id: string;
+  /** False when no account uses the email that was typed. */
+  hasAccount: boolean;
   name: string;
   email: string;
-  role: "merchant" | "staff";
+  role: "merchant" | "staff" | "superadmin";
   storeName: string | null;
   storePhone: string | null;
   requestedAt: string;
@@ -195,12 +197,26 @@ export async function listPasswordResets(): Promise<PasswordResetRow[]> {
   });
   const now = Date.now();
   return rows.map((r) => {
+    if (!r.user) {
+      return {
+        id: r.id,
+        hasAccount: false,
+        name: "",
+        email: r.email,
+        role: "merchant" as const,
+        storeName: null,
+        storePhone: null,
+        requestedAt: r.createdAt.toISOString(),
+        codeExpiresAt: null,
+      };
+    }
     const store = r.user.stores[0] ?? r.user.staffStore ?? null;
     return {
       id: r.id,
+      hasAccount: true,
       name: r.user.name,
       email: r.user.email,
-      role: r.user.role === "staff" ? "staff" : "merchant",
+      role: r.user.role,
       storeName: store?.name ?? null,
       storePhone: store?.phone || null,
       requestedAt: r.createdAt.toISOString(),
@@ -210,4 +226,20 @@ export async function listPasswordResets(): Promise<PasswordResetRow[]> {
           : null,
     };
   });
+}
+
+/** Counts for the admin menu badges: what is waiting for the platform owner. */
+export async function adminWaiting(): Promise<{
+  planRequests: number;
+  passwordResets: number;
+  newMessages: number;
+}> {
+  const [planRequests, passwordResets, newMessages] = await Promise.all([
+    prisma.user.count({
+      where: { role: "merchant", requestedPlan: { not: null } },
+    }),
+    prisma.passwordReset.count({ where: { usedAt: null } }),
+    prisma.supportRequest.count({ where: { handled: false } }),
+  ]);
+  return { planRequests, passwordResets, newMessages };
 }

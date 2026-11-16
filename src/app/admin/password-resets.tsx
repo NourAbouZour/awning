@@ -73,6 +73,38 @@ function ResetRow({ request }: { request: PasswordResetRow }) {
       ? `https://wa.me/${normalizePhone(request.storePhone)}?text=${encodeURIComponent(message)}`
       : null;
 
+  if (!request.hasAccount) {
+    return (
+      <li className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-ink">
+            {request.email}{" "}
+            <span className="font-normal text-ink-soft">
+              asked for a password code
+            </span>
+          </p>
+          <p className="text-xs text-warn">
+            No account uses this email. They may have signed up with a
+            different one, so there is no code to make.
+          </p>
+          <p className="text-xs text-ink-soft">
+            Asked {formatDateTime(request.requestedAt)}
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={pending}
+          onClick={dismiss}
+          aria-label={`Close the request from ${request.email}`}
+        >
+          <X className="size-3.5" />
+          Close
+        </Button>
+      </li>
+    );
+  }
+
   return (
     <li className="px-5 py-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -86,7 +118,11 @@ function ResetRow({ request }: { request: PasswordResetRow }) {
           <p className="text-xs text-ink-soft">
             {request.email}
             {request.storeName ? ` · ${request.storeName}` : ""}
-            {request.role === "staff" ? " (staff)" : ""}
+            {request.role === "staff"
+              ? " (staff)"
+              : request.role === "superadmin"
+                ? " · Shopleb admin account"
+                : ""}
             {request.storePhone ? ` · ${request.storePhone}` : ""} · asked{" "}
             {formatDateTime(request.requestedAt)}
           </p>

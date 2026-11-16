@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LayoutDashboard, Inbox, LogOut, Store, Shield } from "lucide-react";
 import { requireSuperadmin } from "@/lib/auth";
 import { logout } from "@/app/(auth)/actions";
+import { adminWaiting } from "@/server/admin";
 
 export const metadata: Metadata = { title: "Admin · Shopleb" };
 export const dynamic = "force-dynamic";
@@ -19,6 +20,12 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   await requireSuperadmin();
+  const waiting = await adminWaiting();
+  // What is waiting for the owner behind each menu item.
+  const badges: Record<string, number> = {
+    "/admin": waiting.planRequests + waiting.passwordResets,
+    "/admin/messages": waiting.newMessages + waiting.passwordResets,
+  };
 
   return (
     <div className="flex min-h-dvh bg-canvas">
@@ -36,6 +43,11 @@ export default async function AdminLayout({
             >
               <item.icon className="size-4" />
               {item.label}
+              {badges[item.href] > 0 && (
+                <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-warn px-1.5 text-[11px] font-semibold text-white">
+                  {badges[item.href]}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
@@ -60,6 +72,11 @@ export default async function AdminLayout({
             {nav.map((item) => (
               <Link key={item.href} href={item.href} className="hover:underline">
                 {item.label}
+                {badges[item.href] > 0 && (
+                  <span className="ml-1 rounded-full bg-warn px-1.5 text-[11px] font-semibold text-white">
+                    {badges[item.href]}
+                  </span>
+                )}
               </Link>
             ))}
           </nav>

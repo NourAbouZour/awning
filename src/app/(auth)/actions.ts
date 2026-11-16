@@ -99,13 +99,15 @@ export interface ResetState {
 }
 
 const MAX_CODE_ATTEMPTS = 5;
+const MAX_UNKNOWN_REQUESTS = 100;
 const BAD_CODE =
   "That code isn't right or has expired. Ask the Shopleb team for a new one.";
 
 /**
- * Step 1: the user says they forgot their password. The request shows up for
- * the platform owner in /admin, who generates a one-time code for them. The
- * answer is the same whether or not the email has an account.
+ * Step 1: the user says they forgot their password. Every request shows up
+ * for the platform owner in /admin, who generates a one-time code for them.
+ * An email with no account is recorded too (so the owner can tell the person
+ * they used a different email), and the answer on screen is always the same.
  */
 export async function requestPasswordReset(
   _prev: ResetState,
@@ -116,22 +118,30 @@ export async function requestPasswordReset(
 
   const user = await prisma.user.findUnique({
     where: { email },
-    select: { id: true, role: true },
+    select: { id: true },
   });
-  if (user && user.role !== "superadmin") {
-    // One open request per user is enough; refresh it instead of piling up.
-    const open = await prisma.passwordReset.findFirst({
-      where: { userId: user.id, usedAt: null },
-      orderBy: { createdAt: "desc" },
-      select: { id: true },
+  // One open request per person is enough; refresh it instead of piling up.
+  const open = await prisma.passwordReset.findFirst({
+    where: user
+      ? { userId: user.id, usedAt: null }
+      : { userId: null, email, usedAt: null },
+    orderBy: { createdAt: "desc" },
+    select: { id: true },
+  });
+  if (open) {
+    await prisma.passwordReset.update({
+      where: { id: open.id },
+      data: { createdAt: new Date(), email },
     });
-    if (open) {
-      await prisma.passwordReset.update({
-        where: { id: open.id },
-        data: { createdAt: new Date() },
-      });
-    } else {
-      await prisma.passwordReset.create({ data: { userId: user.id } });
+  } else if (user) {
+    await prisma.passwordReset.create({ data: { userId: user.id, email } });
+  } else {
+    // Unknown emails are kept too, up to a cap so the list can't be flooded.
+    const unknown = await prisma.passwordReset.count({
+      where: { userId: null },
+    });
+    if (unknown < MAX_UNKNOWN_REQUESTS) {
+      await prisma.passwordReset.create({ data: { email } });
     }
   }
   return { sent: true };
@@ -156,9 +166,9 @@ export async function resetPasswordWithCode(
 
   const user = await prisma.user.findUnique({
     where: { email },
-    select: { id: true, role: true },
+    select: { id: true },
   });
-  if (!user || user.role === "superadmin") return { error: BAD_CODE };
+  if (!user) return { error: BAD_CODE };
 
   const request = await prisma.passwordReset.findFirst({
     where: { userId: user.id, usedAt: null, codeHash: { not: null } },

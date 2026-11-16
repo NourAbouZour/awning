@@ -311,8 +311,11 @@ model AbandonedCart {
 // generates a one-time code (valid 5 minutes) to pass on to the user.
 model PasswordReset {
   id            String    @id @default(cuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Null when nobody has an account with the email that was typed. The
+  // request is still shown to the platform owner so nothing goes unseen.
+  userId        String?
+  user          User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email         String    @default("")
   codeHash      String?
   codeExpiresAt DateTime?
   attempts      Int       @default(0)
