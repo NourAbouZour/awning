@@ -76,6 +76,16 @@ export interface Product {
   seoDescription?: string;
   wholesalePrice?: number;
   wholesaleMinQty?: number;
+  /** The product's own percent off, as the owner typed it. */
+  salePercent?: number;
+  /**
+   * The percent off that actually applies right now: the bigger of the
+   * product's own sale and its collection's, and only on a plan with sales.
+   * Filled in when a whole store is loaded.
+   */
+  sale?: number;
+  /** Ids of products recommended alongside this one (upsell / cross-sell). */
+  relatedIds?: string[];
   inventory: number;
   sku: string;
   status: "active" | "draft";
@@ -88,6 +98,8 @@ export interface Category {
   name: string;
   slug: string;
   image: string;
+  /** Percent off every product in this collection. */
+  salePercent?: number;
 }
 
 export interface Store {

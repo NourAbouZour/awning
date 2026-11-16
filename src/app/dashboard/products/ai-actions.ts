@@ -1,9 +1,15 @@
 "use server";
 
 import Anthropic from "@anthropic-ai/sdk";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
+import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod/v4";
 import { assertFeature, requireCurrentStore } from "@/lib/auth";
+import {
+  AI_LIMIT_MESSAGE,
+  AI_OFF_MESSAGE,
+  aiConfigured,
+  takeAiCredit,
+} from "@/server/ai";
 
 const ProductCopy = z.object({
   description: z.string(),
@@ -25,11 +31,6 @@ export interface ProductCopyResult {
   seoDescription?: string;
 }
 
-/** True when the server has Claude credentials, so the AI button can show. */
-export async function aiConfigured(): Promise<boolean> {
-  return Boolean(process.env.ANTHROPIC_API_KEY);
-}
-
 /**
  * Arcade: write a product description plus an SEO title and meta description
  * with Claude. Needs ANTHROPIC_API_KEY on the server.
@@ -43,12 +44,8 @@ export async function generateProductCopy(
   if (input.title.trim().length < 2) {
     return { error: "Give the product a name first." };
   }
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return {
-      error:
-        "AI writing isn't switched on yet. Ask us on WhatsApp to turn it on.",
-    };
-  }
+  if (!aiConfigured()) return { error: AI_OFF_MESSAGE };
+  if (!(await takeAiCredit(store.id))) return { error: AI_LIMIT_MESSAGE };
 
   const client = new Anthropic();
   const facts = [
@@ -62,12 +59,16 @@ export async function generateProductCopy(
     .join("\n");
 
   try {
-    const response = await client.messages.parse({
+    const response = await client.beta.messages.parse({
       model: "claude-opus-5-5",
       max_tokens: 4000,
+      // If the model declines a request, the API retries on its default
+      // fallback model inside the same call.
+      betas: ["server-side-fallback-2026-07-01"],
+      fallbacks: "default",
       output_config: {
         effort: "low",
-        format: zodOutputFormat(ProductCopy),
+        format: betaZodOutputFormat(ProductCopy),
       },
       system:
         "You write product copy for small online shops, many of them in Lebanon. Write in clear, warm, plain English. Use only facts given by the shop owner; never invent materials, sizes, certifications or claims. Do not use em dashes.",

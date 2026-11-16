@@ -51,6 +51,10 @@ interface VariantRow {
 export interface ProductFormFeatures {
   wholesale: boolean;
   aiSeo: boolean;
+  /** Shopfront: a percent-off sale on the product. */
+  sales: boolean;
+  /** Shopfront: link other products to recommend with this one. */
+  upsell: boolean;
   /** The server has AI credentials, so the AI button can work. */
   aiReady: boolean;
 }
@@ -60,11 +64,20 @@ const NO_COLLECTION = "__none__";
 export function ProductForm({
   product,
   categories,
-  features = { wholesale: false, aiSeo: false, aiReady: false },
+  features = {
+    wholesale: false,
+    aiSeo: false,
+    sales: false,
+    upsell: false,
+    aiReady: false,
+  },
+  otherProducts = [],
 }: {
   product?: Product;
   categories: Category[];
   features?: ProductFormFeatures;
+  /** The store's other products, to pick recommendations from. */
+  otherProducts?: { id: string; title: string; image?: string }[];
 }) {
   const router = useRouter();
   const isEdit = !!product;
@@ -97,6 +110,13 @@ export function ProductForm({
   const [seoDescription, setSeoDescription] = React.useState(
     product?.seoDescription ?? ""
   );
+  const [salePercent, setSalePercent] = React.useState(
+    product?.salePercent ? String(product.salePercent) : ""
+  );
+  const [relatedIds, setRelatedIds] = React.useState<string[]>(
+    product?.relatedIds ?? []
+  );
+  const [relatedQuery, setRelatedQuery] = React.useState("");
   const [aiNotes, setAiNotes] = React.useState("");
   const [writing, setWriting] = React.useState(false);
   const [active, setActive] = React.useState(
@@ -177,6 +197,12 @@ export function ProductForm({
     if (compareAt && Number(compareAt) <= Number(price))
       next.compareAt = "Compare-at should be higher than the price.";
     if (
+      features.sales &&
+      salePercent &&
+      (Number(salePercent) < 1 || Number(salePercent) > 90)
+    )
+      next.sale = "A sale is between 1 and 90 percent off.";
+    if (
       features.wholesale &&
       wholesalePrice &&
       (Number(wholesalePrice) <= 0 || Number(wholesaleMinQty) < 2)
@@ -211,6 +237,8 @@ export function ProductForm({
       wholesaleMinQty: wholesaleMinQty ? Number(wholesaleMinQty) : null,
       seoTitle,
       seoDescription,
+      salePercent: salePercent ? Number(salePercent) : null,
+      relatedIds,
     };
 
     setSaving(true);
@@ -573,6 +601,43 @@ export function ProductForm({
               <p className="text-xs text-danger">{errors.compareAt}</p>
             )}
           </div>
+          {features.sales && (
+            <div className="space-y-1.5 border-t border-line pt-4">
+              <Label htmlFor="sale-percent">Sale</Label>
+              <div className="flex items-center overflow-hidden rounded-lg border border-line-strong bg-paper focus-within:border-green focus-within:ring-2 focus-within:ring-green/15">
+                <input
+                  id="sale-percent"
+                  type="number"
+                  min="1"
+                  max="90"
+                  step="1"
+                  inputMode="numeric"
+                  className="h-10 min-w-0 flex-1 bg-transparent px-3.5 text-sm outline-none"
+                  value={salePercent}
+                  onChange={(e) => setSalePercent(e.target.value)}
+                  placeholder="No sale"
+                  aria-invalid={!!errors.sale}
+                />
+                <span className="border-l border-line bg-canvas px-3 text-sm text-ink-soft">
+                  % off
+                </span>
+              </div>
+              {errors.sale ? (
+                <p className="text-xs text-danger">{errors.sale}</p>
+              ) : (
+                <p className="text-xs text-ink-soft">
+                  {salePercent && Number(price) > 0 && Number(salePercent) > 0
+                    ? `Shoppers pay ${(
+                        Math.round(
+                          Number(price) * (100 - Math.min(90, Number(salePercent))),
+                        ) / 100
+                      ).toFixed(2)} instead of ${Number(price).toFixed(2)}.`
+                    : "Takes a percentage off this product. Leave empty for no sale."}{" "}
+                  To put a whole collection on sale, edit it in Collections.
+                </p>
+              )}
+            </div>
+          )}
         </Card>
 
         <Card className="space-y-4 p-5">
@@ -632,6 +697,92 @@ export function ProductForm({
             )}
           </div>
         </Card>
+
+        {features.upsell && (
+          <Card className="space-y-3 p-5">
+            <div>
+              <Label>Recommend with this product</Label>
+              <p className="mt-0.5 text-xs text-ink-soft">
+                Pick up to 8 products to show as &quot;Goes well with&quot; on
+                this product&apos;s page and first in the shopper&apos;s bag.
+              </p>
+            </div>
+            {otherProducts.length === 0 ? (
+              <p className="text-xs text-ink-soft">
+                Add more products first, then link them here.
+              </p>
+            ) : (
+              <>
+                {otherProducts.length > 6 && (
+                  <Input
+                    value={relatedQuery}
+                    onChange={(e) => setRelatedQuery(e.target.value)}
+                    placeholder="Search your products"
+                    className="h-9"
+                    aria-label="Search products to recommend"
+                  />
+                )}
+                <ul className="max-h-56 divide-y divide-line overflow-y-auto rounded-lg border border-line">
+                  {otherProducts
+                    .filter(
+                      (p) =>
+                        !relatedQuery ||
+                        p.title
+                          .toLowerCase()
+                          .includes(relatedQuery.toLowerCase()),
+                    )
+                    .map((p) => {
+                      const checked = relatedIds.includes(p.id);
+                      const full = !checked && relatedIds.length >= 8;
+                      return (
+                        <li key={p.id}>
+                          <label
+                            className={cn(
+                              "flex cursor-pointer items-center gap-2.5 px-3 py-2 text-[13px]",
+                              full && "cursor-not-allowed opacity-50",
+                            )}
+                          >
+                            <input
+                              type="checkbox"
+                              className="size-4 accent-[var(--green)]"
+                              checked={checked}
+                              disabled={full}
+                              onChange={() =>
+                                setRelatedIds((ids) =>
+                                  checked
+                                    ? ids.filter((id) => id !== p.id)
+                                    : [...ids, p.id],
+                                )
+                              }
+                            />
+                            <span className="relative size-7 shrink-0 overflow-hidden rounded border border-line bg-canvas">
+                              {p.image && (
+                                <Image
+                                  src={p.image}
+                                  alt=""
+                                  fill
+                                  sizes="28px"
+                                  className="object-cover"
+                                />
+                              )}
+                            </span>
+                            <span className="min-w-0 truncate text-ink-body">
+                              {p.title}
+                            </span>
+                          </label>
+                        </li>
+                      );
+                    })}
+                </ul>
+                <p className="text-xs text-ink-soft">
+                  {relatedIds.length === 0
+                    ? "Nothing linked yet."
+                    : `${relatedIds.length} linked.`}
+                </p>
+              </>
+            )}
+          </Card>
+        )}
 
         {features.wholesale && (
           <Card className="space-y-4 p-5">

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { AwningLogo } from "@/components/awning-logo";
-import { WHATSAPP_LINK } from "@/lib/contact";
 
 const columns = [
   {
@@ -23,7 +22,7 @@ const columns = [
     title: "Company",
     links: [
       { label: "About", href: "/#story" },
-      { label: "Contact", href: WHATSAPP_LINK },
+      { label: "Contact us", href: "/contact" },
     ],
   },
 ];

@@ -1,4 +1,4 @@
-import { requireCurrentStore } from "@/lib/auth";
+import { requireCurrentStore, currentHasFeature } from "@/lib/auth";
 import { getStoreById } from "@/server/stores";
 import { CategoriesClient } from "./categories-client";
 
@@ -11,5 +11,11 @@ export default async function CategoriesPage() {
   for (const c of categories) {
     counts[c.id] = products.filter((p) => p.categoryId === c.id).length;
   }
-  return <CategoriesClient categories={categories} counts={counts} />;
+  return (
+    <CategoriesClient
+      categories={categories}
+      counts={counts}
+      canRunSales={await currentHasFeature("sales")}
+    />
+  );
 }

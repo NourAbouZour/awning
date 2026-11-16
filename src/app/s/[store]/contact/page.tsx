@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { Clock, Mail, MapPin, Navigation, Phone } from "lucide-react";
 import { ContactForm } from "@/components/storefront/contact-form";
 import { getStoreBySlug } from "@/server/stores";
 import { mapsLinkFor } from "@/lib/lebanon";
+import { directionsUrl, mapEmbedSrc } from "@/lib/maps";
 import { parseHours, formatDayRange } from "@/lib/hours";
 
 export const metadata: Metadata = { title: "Contact" };
@@ -27,6 +28,9 @@ export default async function ContactPage({
     city: store.city,
   });
   const hours = parseHours(store.hours);
+  // The map the owner set up in Settings (or one built from the address).
+  const mapSrc = mapEmbedSrc(store);
+  const directions = directionsUrl(store);
 
   const info = [
     store.contactEmail && {
@@ -121,15 +125,45 @@ export default async function ContactPage({
             </div>
           )}
 
-          <div className="mt-10 rounded-2xl bg-sf-wash p-6">
-            <p className="text-sm font-semibold">Order questions?</p>
-            <p className="mt-1.5 text-sm leading-relaxed text-sf-muted">
-              Include your order number (it&apos;s in your confirmation email)
-              and we can usually sort things out in one reply.
-            </p>
-          </div>
         </aside>
       </div>
+
+      {mapSrc && (
+        <section className="mt-14 md:mt-20" aria-label="Where to find us">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 className="sf-display text-2xl md:text-3xl">Find us</h2>
+              {addressLine && (
+                <p className="mt-2 flex items-start gap-2 text-sf-muted">
+                  <MapPin className="mt-1 size-4 shrink-0" />
+                  {addressLine}
+                </p>
+              )}
+            </div>
+            {directions && (
+              <a
+                href={directions}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2.5 rounded-full bg-sf-brand px-6 py-3.5 text-sm font-semibold text-sf-on-brand transition-colors hover:bg-sf-brand-hover"
+              >
+                <Navigation className="size-4" />
+                Get directions
+              </a>
+            )}
+          </div>
+          <div className="mt-6 overflow-hidden rounded-2xl border border-sf-line bg-sf-wash">
+            <iframe
+              src={mapSrc}
+              title={`Map showing ${store.name}`}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+              className="block h-80 w-full border-0 md:h-[28rem]"
+            />
+          </div>
+        </section>
+      )}
     </div>
   );
 }

@@ -20,6 +20,7 @@ export function productLimit(plan: Plan): number {
 export type Feature =
   | "customDomain"
   | "discounts"
+  | "sales"
   | "emailMarketing"
   | "abandonedCart"
   | "upsell"
@@ -34,6 +35,7 @@ export type Feature =
 const SHOPFRONT_FEATURES: Feature[] = [
   "customDomain",
   "discounts",
+  "sales",
   "emailMarketing",
   "abandonedCart",
   "upsell",

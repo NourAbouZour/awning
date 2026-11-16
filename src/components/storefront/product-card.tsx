@@ -6,7 +6,7 @@ import { Plus } from "lucide-react";
 import { useCart } from "@/components/storefront/cart-context";
 import type { Product } from "@/lib/types";
 import { cn, formatMoney } from "@/lib/utils";
-import { cardPrice, isSoldOut } from "@/lib/product";
+import { cardPrice, cardWasPrice, isSoldOut } from "@/lib/product";
 
 /**
  * Storefront product card: second image on hover, sale/sold-out badges,
@@ -24,7 +24,8 @@ export function ProductCard({
   const base = `/s/${store.slug}`;
   const soldOut = isSoldOut(product);
   const price = cardPrice(product);
-  const onSale = !!product.compareAt && product.compareAt > price;
+  const was = cardWasPrice(product);
+  const onSale = was !== undefined && was > price;
   const hasVariants = !!product.variantGroup;
   const canAdd = hasVariants || remaining(product.id) > 0;
 
@@ -67,7 +68,7 @@ export function ProductCard({
             ) : (
               onSale && (
                 <span className="rounded-full bg-sf-brand px-2.5 py-1 text-[11px] font-semibold text-sf-on-brand">
-                  Sale
+                  {product.sale ? `${product.sale}% off` : "Sale"}
                 </span>
               )
             )}
@@ -106,7 +107,7 @@ export function ProductCard({
         <p className="shrink-0 text-sm tabular-nums">
           {onSale && (
             <span className="mr-1.5 text-sf-muted line-through">
-              {formatMoney(product.compareAt!, store.currency)}
+              {formatMoney(was, store.currency)}
             </span>
           )}
           <span className={cn("font-semibold", onSale && "text-sf-brand")}>

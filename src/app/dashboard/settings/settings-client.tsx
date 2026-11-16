@@ -48,9 +48,9 @@ const CURRENCIES: [string, string][] = [
 const PLAN_SUMMARY: Record<Plan, string> = {
   stall: "Free plan, up to 5 products.",
   shopfront:
-    "Unlimited products, discount codes, email marketing, abandoned carts, upsells and a custom domain.",
+    "Unlimited products, sales and discount codes, email marketing, abandoned carts, linked products and a custom domain.",
   arcade:
-    "Everything in Shopfront, plus several stores, staff accounts, analytics, wholesale prices, AI descriptions and SEO, no Shopleb branding, and an API.",
+    "Everything in Shopfront, plus several stores, staff accounts, analytics with AI sales advice, wholesale prices, AI descriptions and SEO, no Shopleb branding, and an API.",
 };
 
 export function SettingsClient({

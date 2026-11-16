@@ -38,9 +38,12 @@ import { slugify } from "@/lib/utils";
 export function CategoriesClient({
   categories,
   counts,
+  canRunSales,
 }: {
   categories: Category[];
   counts: Record<string, number>;
+  /** Shopfront and up: a collection can carry a percent-off sale. */
+  canRunSales: boolean;
 }) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
@@ -49,6 +52,7 @@ export function CategoriesClient({
   const [editTarget, setEditTarget] = React.useState<Category | null>(null);
   const [editName, setEditName] = React.useState("");
   const [editImage, setEditImage] = React.useState("");
+  const [editSale, setEditSale] = React.useState("");
   const [pending, startTransition] = React.useTransition();
 
   function create() {
@@ -76,6 +80,7 @@ export function CategoriesClient({
     setEditTarget(cat);
     setEditName(cat.name);
     setEditImage(cat.image ?? "");
+    setEditSale(cat.salePercent ? String(cat.salePercent) : "");
   }
 
   function doSaveEdit() {
@@ -84,6 +89,9 @@ export function CategoriesClient({
       const res = await updateCategory(editTarget.id, {
         name: editName,
         image: editImage,
+        ...(canRunSales
+          ? { salePercent: editSale ? Number(editSale) : null }
+          : {}),
       });
       if (res.error) {
         toast.error(res.error);
@@ -195,7 +203,14 @@ export function CategoriesClient({
               </div>
               <div className="flex items-center justify-between p-4">
                 <div>
-                  <h2 className="text-sm font-semibold text-ink">{c.name}</h2>
+                  <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
+                    {c.name}
+                    {canRunSales && c.salePercent ? (
+                      <span className="rounded-full bg-green-wash px-2 py-0.5 text-[11px] font-semibold text-green">
+                        {c.salePercent}% off
+                      </span>
+                    ) : null}
+                  </h2>
                   <p className="text-xs text-ink-soft">
                     {counts[c.id] ?? 0}{" "}
                     {(counts[c.id] ?? 0) === 1 ? "product" : "products"}
@@ -291,6 +306,33 @@ export function CategoriesClient({
               )}
             </div>
           </div>
+          {canRunSales && (
+            <div className="mt-4 space-y-1.5 border-t border-line pt-4">
+              <Label htmlFor="edit-sale">Sale on the whole collection</Label>
+              <div className="flex max-w-48 items-center overflow-hidden rounded-lg border border-line-strong bg-paper focus-within:border-green focus-within:ring-2 focus-within:ring-green/15">
+                <input
+                  id="edit-sale"
+                  type="number"
+                  min="1"
+                  max="90"
+                  step="1"
+                  inputMode="numeric"
+                  className="h-10 min-w-0 flex-1 bg-transparent px-3.5 text-sm outline-none"
+                  value={editSale}
+                  onChange={(e) => setEditSale(e.target.value)}
+                  placeholder="No sale"
+                />
+                <span className="border-l border-line bg-canvas px-3 text-sm text-ink-soft">
+                  % off
+                </span>
+              </div>
+              <p className="text-xs text-ink-soft">
+                Takes this percentage off every product in the collection.
+                Leave empty to end the sale. If a product has its own sale too,
+                the bigger one applies.
+              </p>
+            </div>
+          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditTarget(null)}>
               Cancel

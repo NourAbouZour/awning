@@ -12,6 +12,7 @@ import {
   Globe,
   Home,
   Inbox,
+  LifeBuoy,
   LogOut,
   Mail,
   Menu,
@@ -140,6 +141,7 @@ function buildNav(unread: number, ctx: SidebarContext): NavItem[] {
       ownerOnly: true,
     },
     { href: "/dashboard/settings", label: "Settings", icon: Settings },
+    { href: "/dashboard/contact", label: "Contact Shopleb", icon: LifeBuoy },
   ];
   // Paid pages appear only once the store's plan includes them.
   return items.filter(

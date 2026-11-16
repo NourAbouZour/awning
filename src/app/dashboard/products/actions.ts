@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireCurrentStore, getCurrentPlan } from "@/lib/auth";
 import { hasFeature, limitReached, FREE_PRODUCT_LIMIT } from "@/lib/plan";
+import { MAX_SALE_PERCENT } from "@/lib/product";
 
 const LIMIT_MESSAGE = `You've reached ${FREE_PRODUCT_LIMIT} products on the free plan, upgrade to add more.`;
 
@@ -37,6 +38,9 @@ export interface ProductInput {
   wholesaleMinQty?: number | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
+  // Shopfront and up; ignored on other plans.
+  salePercent?: number | null;
+  relatedIds?: string[];
 }
 
 export interface ProductActionState {
@@ -90,6 +94,11 @@ function validate(input: ProductInput): string | null {
       !(input.wholesaleMinQty && input.wholesaleMinQty >= 2))
   )
     return "Wholesale needs a price and a minimum quantity of 2 or more.";
+  if (
+    input.salePercent != null &&
+    (input.salePercent < 1 || input.salePercent > MAX_SALE_PERCENT)
+  )
+    return `A sale is between 1 and ${MAX_SALE_PERCENT} percent off.`;
   return null;
 }
 
@@ -143,13 +152,43 @@ async function assertCategory(storeId: string, categoryId: string) {
   if (!cat) throw new Error("Collection does not belong to this store.");
 }
 
-/** Wholesale and SEO fields, saved only on a plan that includes them. */
-async function arcadeFields(input: ProductInput) {
+/**
+ * Paid-plan fields (sale, linked products, wholesale, SEO), each saved only
+ * when the plan includes it so a downgrade never writes over them.
+ */
+async function arcadeFields(input: ProductInput, storeId: string) {
   const plan = await getCurrentPlan();
   const wholesale = hasFeature(plan, "wholesale");
   const seo = hasFeature(plan, "aiSeo");
+  const sales = hasFeature(plan, "sales");
+  const upsell = hasFeature(plan, "upsell");
+
+  // Linked products must belong to this store and can't include the product itself.
+  let relatedIds: string[] = [];
+  if (upsell && input.relatedIds?.length) {
+    const wanted = [...new Set(input.relatedIds)]
+      .filter((id) => id !== input.id)
+      .slice(0, 8);
+    const owned = await prisma.product.findMany({
+      where: { storeId, id: { in: wanted } },
+      select: { id: true },
+    });
+    const ok = new Set(owned.map((p) => p.id));
+    relatedIds = wanted.filter((id) => ok.has(id));
+  }
   const hasWholesale = input.wholesalePrice != null && input.wholesalePrice > 0;
   return {
+    ...(sales
+      ? {
+          salePercent:
+            input.salePercent != null && input.salePercent >= 1
+              ? Math.min(MAX_SALE_PERCENT, Math.floor(input.salePercent))
+              : null,
+        }
+      : {}),
+    ...(upsell
+      ? { relatedIds: relatedIds as unknown as Prisma.InputJsonValue }
+      : {}),
     ...(wholesale
       ? {
           wholesalePrice: hasWholesale
@@ -202,7 +241,7 @@ export async function createProduct(
         : Math.max(0, input.inventory | 0),
       sku: input.sku ?? "",
       status: input.status,
-      ...(await arcadeFields(input)),
+      ...(await arcadeFields(input, store.id)),
       variantGroupLabel,
       variants: variantCreate(variants),
     },
@@ -230,7 +269,7 @@ export async function updateProduct(
 
   const slug = await uniqueSlug(store.id, input.title, input.id);
   const { variantGroupLabel, variants } = cleanVariants(input);
-  const extra = await arcadeFields(input);
+  const extra = await arcadeFields(input, store.id);
 
   await prisma.$transaction([
     prisma.productVariant.deleteMany({ where: { productId: input.id } }),
@@ -335,6 +374,8 @@ export async function duplicateProduct(
       seoDescription: src.seoDescription,
       wholesalePrice: src.wholesalePrice,
       wholesaleMinQty: src.wholesaleMinQty,
+      salePercent: src.salePercent,
+      relatedIds: (src.relatedIds ?? []) as Prisma.InputJsonValue,
       variantGroupLabel: src.variantGroupLabel,
       variants: src.variants.length
         ? {

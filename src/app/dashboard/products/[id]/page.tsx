@@ -9,6 +9,9 @@ import { getProductById } from "@/server/products";
 import { getStoreById } from "@/server/stores";
 import { productFormFeatures } from "../form-features";
 
+// AI writing can take a while; give its server action room to finish.
+export const maxDuration = 60;
+
 export default async function EditProductPage({
   params,
 }: {
@@ -21,6 +24,9 @@ export default async function EditProductPage({
   const full = await getStoreById(store.id);
   const categories = full?.categories ?? [];
   const features = await productFormFeatures();
+  const otherProducts = (full?.products ?? [])
+    .filter((p) => p.id !== product.id)
+    .map((p) => ({ id: p.id, title: p.title, image: p.images[0] }));
 
   return (
     <>
@@ -38,6 +44,7 @@ export default async function EditProductPage({
         product={product}
         categories={categories}
         features={features}
+        otherProducts={otherProducts}
       />
     </>
   );

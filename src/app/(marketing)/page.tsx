@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { WHATSAPP_LINK } from "@/lib/contact";
 import {
   ArrowRight,
   BadgeCheck,
@@ -568,14 +567,12 @@ function Faq() {
           </h2>
           <p className="mt-4 text-ink-soft">
             Something else on your mind?{" "}
-            <a
-              href={WHATSAPP_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/contact"
               className="font-medium text-green underline-offset-4 hover:underline"
             >
-              Message us on WhatsApp
-            </a>{" "}
+              Send us a message
+            </Link>{" "}
             and a human replies.
           </p>
         </div>

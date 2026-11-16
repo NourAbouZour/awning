@@ -12,7 +12,7 @@ import { useCart } from "@/components/storefront/cart-context";
 import type { Product } from "@/lib/types";
 import { cn, formatMoney } from "@/lib/utils";
 import { hasFeature } from "@/lib/plan";
-import { defaultVariant, isSoldOut } from "@/lib/product";
+import { defaultVariant, isSoldOut, withSale } from "@/lib/product";
 
 export function BuyBox({ product }: { product: Product }) {
   const { store, add, remaining } = useCart();
@@ -27,7 +27,14 @@ export function BuyBox({ product }: { product: Product }) {
   const [notice, setNotice] = React.useState("");
 
   const selected = variants?.find((v) => v.id === variantId);
-  const price = selected?.price ?? product.price;
+  const basePrice = selected?.price ?? product.price;
+  const price = withSale(basePrice, product.sale);
+  // Crossed-out price: the pre-sale price during a sale, else "compare-at".
+  const was = product.sale
+    ? basePrice
+    : product.compareAt && product.compareAt > price
+      ? product.compareAt
+      : undefined;
   const soldOut = isSoldOut(product);
   // Units still available for what's selected, after what's already in the bag.
   const left =
@@ -66,19 +73,21 @@ export function BuyBox({ product }: { product: Product }) {
         {product.title}
       </h1>
       <p className="mt-3 text-xl">
-        {product.compareAt && (
+        {was !== undefined && (
           <span className="mr-2.5 text-sf-muted line-through">
-            {formatMoney(product.compareAt, store.currency)}
+            {formatMoney(was, store.currency)}
           </span>
         )}
         <span
-          className={cn(
-            "font-semibold",
-            product.compareAt && "text-sf-brand"
-          )}
+          className={cn("font-semibold", was !== undefined && "text-sf-brand")}
         >
           {formatMoney(price, store.currency)}
         </span>
+        {product.sale ? (
+          <span className="ml-3 rounded-full bg-sf-brand px-2.5 py-1 align-middle text-xs font-semibold text-sf-on-brand">
+            {product.sale}% off
+          </span>
+        ) : null}
       </p>
 
       {/* variants */}

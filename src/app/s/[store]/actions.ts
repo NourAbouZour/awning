@@ -9,6 +9,7 @@ import { fireOrderWebhook } from "@/server/webhooks";
 import { hasFeature, type Plan } from "@/lib/plan";
 import { applyDiscount, cleanCode } from "@/lib/discount";
 import { formatMoney } from "@/lib/utils";
+import { effectiveSale, withSale } from "@/lib/product";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -197,7 +198,10 @@ export async function placeOrder(
           status: "active",
           categoryId: { not: null },
         },
-        include: { variants: true },
+        include: {
+          variants: true,
+          category: { select: { salePercent: true } },
+        },
       });
       const byId = new Map(products.map((p) => [p.id, p]));
 
@@ -255,7 +259,16 @@ export async function placeOrder(
           }
         }
 
-        let unit = variant?.price != null ? variant.price : product.price;
+        // The sale that applies now (own or collection's, on a plan with sales).
+        const sale = effectiveSale(
+          plan,
+          product.salePercent,
+          product.category?.salePercent,
+        );
+        const listed = variant?.price != null ? variant.price : product.price;
+        let unit = new Prisma.Decimal(
+          withSale(Number(listed.toString()), sale),
+        );
         if (
           wholesaleOn &&
           product.wholesalePrice &&
@@ -422,15 +435,19 @@ export async function saveCheckoutDraft(
 
   const products = await prisma.product.findMany({
     where: { id: { in: draft.items.map((i) => i.productId) }, storeId: store.id },
-    include: { variants: true },
+    include: { variants: true, category: { select: { salePercent: true } } },
   });
+  const draftPlan = store.user.plan as Plan;
   const byId = new Map(products.map((p) => [p.id, p]));
   let subtotal = 0;
   const items = draft.items.flatMap((i) => {
     const p = byId.get(i.productId);
     if (!p) return [];
     const v = p.variants.find((x) => x.id === i.variantId);
-    const price = Number((v?.price ?? p.price).toString());
+    const price = withSale(
+      Number((v?.price ?? p.price).toString()),
+      effectiveSale(draftPlan, p.salePercent, p.category?.salePercent),
+    );
     const quantity = Math.max(1, Math.floor(Number(i.quantity) || 1));
     subtotal += price * quantity;
     return [

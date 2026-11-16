@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { themeStyle } from "@/lib/store-theme";
 import { formatMoney } from "@/lib/utils";
+import { cardPrice } from "@/lib/product";
 import type { Store } from "@/lib/types";
 import { ShoppingBag } from "lucide-react";
 
@@ -151,7 +152,7 @@ export function StorePreview({
             </div>
             <p className="mt-1.5 truncate text-[9px] font-medium">{p.title}</p>
             <p className="text-[9px] text-sf-muted">
-              {formatMoney(p.price, store.currency)}
+              {formatMoney(cardPrice(p), store.currency)}
             </p>
           </div>
         ))}

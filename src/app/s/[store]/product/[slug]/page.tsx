@@ -46,10 +46,25 @@ export default async function ProductPage({ params }: { params: Params }) {
   );
   if (!store || !product) notFound();
 
+  // Upsell and cross-sell: products the owner linked to this one (Shopfront
+  // and up), in the order they picked them.
+  const linkedIds = hasFeature(store.plan, "upsell")
+    ? (product.relatedIds ?? [])
+    : [];
+  const linked = linkedIds
+    .map((id) => store.products.find((p) => p.id === id))
+    .filter(
+      (p): p is NonNullable<typeof p> =>
+        !!p && p.status === "active" && p.id !== product.id,
+    )
+    .slice(0, 4);
+  const linkedSet = new Set(linked.map((p) => p.id));
+
   const related = store.products
     .filter(
       (p) =>
         p.id !== product.id &&
+        !linkedSet.has(p.id) &&
         p.status === "active" &&
         p.categoryId === product.categoryId
     )
@@ -75,8 +90,19 @@ export default async function ProductPage({ params }: { params: Params }) {
         <BuyBox product={product} />
       </div>
 
-      {related.length > 0 && (
+      {linked.length > 0 && (
         <section className="mt-20 md:mt-28">
+          <h2 className="sf-display text-2xl md:text-3xl">Goes well with</h2>
+          <div className="mt-7 grid grid-cols-2 gap-x-5 gap-y-9 md:grid-cols-4">
+            {linked.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {related.length > 0 && (
+        <section className={linked.length > 0 ? "mt-16 md:mt-20" : "mt-20 md:mt-28"}>
           <h2 className="sf-display text-2xl md:text-3xl">
             You may also like
           </h2>

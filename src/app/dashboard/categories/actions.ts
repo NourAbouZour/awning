@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { requireCurrentStore } from "@/lib/auth";
+import { requireCurrentStore, currentHasFeature } from "@/lib/auth";
+import { MAX_SALE_PERCENT } from "@/lib/product";
 import { slugify } from "@/lib/utils";
 
 export interface CategoryActionState {
@@ -60,10 +61,13 @@ export async function renameCategory(
   return {};
 }
 
-/** Update a collection's name and/or cover image in one call. */
+/**
+ * Update a collection's name, cover image and (Shopfront and up) the percent
+ * off every product in it.
+ */
 export async function updateCategory(
   id: string,
-  input: { name: string; image: string },
+  input: { name: string; image: string; salePercent?: number | null },
 ): Promise<CategoryActionState> {
   const store = await requireCurrentStore();
   if (input.name.trim().length < 2)
@@ -74,11 +78,26 @@ export async function updateCategory(
   });
   if (!owned) return { error: "Collection not found." };
 
+  const sale = input.salePercent;
+  if (sale != null && (sale < 1 || sale > MAX_SALE_PERCENT))
+    return {
+      error: `A sale is between 1 and ${MAX_SALE_PERCENT} percent off.`,
+    };
+
   const image = input.image.startsWith("blob:") ? "" : input.image;
-  const data: { name: string; image: string; slug?: string } = {
+  const data: {
+    name: string;
+    image: string;
+    slug?: string;
+    salePercent?: number | null;
+  } = {
     name: input.name.trim(),
     image,
   };
+  // Only a plan with sales may set or clear a collection sale.
+  if (input.salePercent !== undefined && (await currentHasFeature("sales"))) {
+    data.salePercent = sale != null ? Math.floor(sale) : null;
+  }
   if (input.name.trim() !== owned.name) {
     data.slug = await uniqueSlug(store.id, input.name, id);
   }

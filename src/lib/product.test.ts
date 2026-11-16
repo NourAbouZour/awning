@@ -1,10 +1,13 @@
 import { describe, it, expect } from "vitest";
 import {
   cardPrice,
+  cardWasPrice,
+  effectiveSale,
   isSoldOut,
   normalizePhone,
   stockFor,
   unitPrice,
+  withSale,
 } from "./product";
 import type { Product } from "./types";
 
@@ -73,5 +76,34 @@ describe("normalizePhone", () => {
     expect(normalizePhone("71 123 456")).toBe("96171123456");
     expect(normalizePhone("+961 71 123 456")).toBe("96171123456");
     expect(normalizePhone("0096171123456")).toBe("96171123456");
+  });
+});
+
+describe("sales", () => {
+  it("applies only on a plan with sales, and takes the bigger of product and collection", () => {
+    expect(effectiveSale("stall", 20, 30)).toBe(0);
+    expect(effectiveSale("shopfront", 20, 30)).toBe(30);
+    expect(effectiveSale("arcade", 25, 10)).toBe(25);
+    expect(effectiveSale("shopfront", null, undefined)).toBe(0);
+    expect(effectiveSale("shopfront", 150, 0)).toBe(90);
+  });
+  it("takes a percentage off and rounds to cents", () => {
+    expect(withSale(100, 20)).toBe(80);
+    expect(withSale(19.99, 15)).toBe(16.99);
+    expect(withSale(50, 0)).toBe(50);
+    expect(withSale(50, undefined)).toBe(50);
+  });
+  it("shows the sale price on cards with the old price crossed out", () => {
+    const onSale = { ...base, sale: 25 };
+    expect(cardPrice(onSale)).toBe(15);
+    expect(cardWasPrice(onSale)).toBe(20);
+    expect(cardWasPrice(base)).toBeUndefined();
+    expect(cardWasPrice({ ...base, compareAt: 30 })).toBe(30);
+  });
+  it("charges the sale price in the bag, and wholesale when that is lower", () => {
+    const p = { ...base, sale: 10, wholesalePrice: 15, wholesaleMinQty: 5 };
+    expect(unitPrice(p, undefined, 1, true)).toBe(18);
+    expect(unitPrice(p, undefined, 5, true)).toBe(15);
+    expect(unitPrice(withVariants && { ...withVariants, sale: 50 }, "l", 1, false)).toBe(15);
   });
 });

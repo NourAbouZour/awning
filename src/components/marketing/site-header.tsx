@@ -18,6 +18,7 @@ const nav = [
   { href: "/#features", label: "What you get" },
   { href: "/pricing", label: "Pricing" },
   { href: "/#stores", label: "Example stores" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export function SiteHeader() {

@@ -8,7 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { submitSupportRequest } from "@/app/(marketing)/pricing/actions";
 
-export function PricingContactForm() {
+export function PricingContactForm({
+  subjectPlaceholder = "A question about plans",
+  messagePlaceholder = "How can we help?",
+}: {
+  subjectPlaceholder?: string;
+  messagePlaceholder?: string;
+} = {}) {
   const [values, setValues] = React.useState({
     name: "",
     email: "",
@@ -98,7 +104,7 @@ export function PricingContactForm() {
           id="c-subject"
           value={values.subject}
           onChange={(e) => set("subject", e.target.value)}
-          placeholder="A question about plans"
+          placeholder={subjectPlaceholder}
         />
       </div>
       <div className="mt-4 space-y-1.5">
@@ -108,7 +114,7 @@ export function PricingContactForm() {
           rows={4}
           value={values.message}
           onChange={(e) => set("message", e.target.value)}
-          placeholder="How can we help?"
+          placeholder={messagePlaceholder}
         />
       </div>
       <Button

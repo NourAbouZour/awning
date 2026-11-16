@@ -8,7 +8,7 @@
 import * as React from "react";
 import type { Product, Store } from "@/lib/types";
 import { hasFeature } from "@/lib/plan";
-import { stockFor, unitPrice } from "@/lib/product";
+import { stockFor, unitPrice, withSale } from "@/lib/product";
 
 export interface CartLineView {
   key: string;
@@ -146,7 +146,7 @@ export function CartProvider({
         variantId: l.variantId,
         variantName: variant?.name,
         unitPrice: unitPrice(product, l.variantId, l.quantity, wholesaleOn),
-        regularPrice: variant?.price ?? product.price,
+        regularPrice: withSale(variant?.price ?? product.price, product.sale),
         quantity: l.quantity,
         stock: stockFor(product, l.variantId),
       },

@@ -11,6 +11,7 @@ import type {
   HomeSection,
 } from "@/lib/types";
 import type { FontPairingId } from "@/lib/fonts";
+import { effectiveSale } from "../lib/product";
 
 // Prisma returns Decimal as an object and Json as already-parsed JS. These
 // adapters map DB rows to the UI types in src/lib/types.ts. They are pure so
@@ -54,6 +55,8 @@ interface ProductRow {
   seoDescription?: string | null;
   wholesalePrice?: DecimalLike | null;
   wholesaleMinQty?: number | null;
+  salePercent?: number | null;
+  relatedIds?: unknown;
   createdAt: Date;
   variants?: VariantRow[];
 }
@@ -89,6 +92,14 @@ export function toProduct(row: ProductRow): Product {
       ? { wholesalePrice: decToNum(row.wholesalePrice) }
       : {}),
     ...(row.wholesaleMinQty ? { wholesaleMinQty: row.wholesaleMinQty } : {}),
+    ...(row.salePercent ? { salePercent: row.salePercent } : {}),
+    ...(Array.isArray(row.relatedIds) && row.relatedIds.length
+      ? {
+          relatedIds: (row.relatedIds as unknown[]).filter(
+            (x): x is string => typeof x === "string",
+          ),
+        }
+      : {}),
     ...(hasGroup
       ? {
           variantGroup: {
@@ -113,10 +124,17 @@ interface CategoryRow {
   name: string;
   slug: string;
   image: string;
+  salePercent?: number | null;
 }
 
 export function toCategory(row: CategoryRow): Category {
-  return { id: row.id, name: row.name, slug: row.slug, image: row.image };
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    image: row.image,
+    ...(row.salePercent ? { salePercent: row.salePercent } : {}),
+  };
 }
 
 /** Every home section, in its default order, for themes saved before a section existed. */
@@ -227,6 +245,10 @@ interface StoreRow {
 }
 
 export function toStore(row: StoreRow): Store {
+  const plan = row.user?.plan ?? "stall";
+  const categorySale = new Map(
+    row.categories.map((c) => [c.id, c.salePercent ?? 0]),
+  );
   return {
     id: row.id,
     name: row.name,
@@ -256,7 +278,16 @@ export function toStore(row: StoreRow): Store {
       ? toTheme(row.theme)
       : ({} as StoreTheme),
     categories: row.categories.map(toCategory),
-    products: row.products.map(toProduct),
+    products: row.products.map((p) => {
+      const product = toProduct(p);
+      // Resolve the sale that applies now (own vs collection, and the plan).
+      const sale = effectiveSale(
+        plan,
+        p.salePercent,
+        p.categoryId ? categorySale.get(p.categoryId) : 0,
+      );
+      return sale > 0 ? { ...product, sale } : product;
+    }),
   };
 }
 

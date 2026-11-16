@@ -96,6 +96,9 @@ model Store {
   // Arcade: read-only REST API key and an order webhook.
   apiKey             String?  @unique
   webhookUrl         String?  @db.Text
+  // AI calls made today (the platform owner pays for them, so they are capped).
+  aiDay              String?
+  aiCount            Int      @default(0)
   createdAt          DateTime @default(now())
 
   staff          User[]          @relation("StoreStaff")
@@ -158,13 +161,15 @@ model StoreTheme {
 }
 
 model Category {
-  id       String    @id @default(cuid())
-  storeId  String
-  store    Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  name     String
-  slug     String
-  image    String    @db.Text
-  products Product[]
+  id          String    @id @default(cuid())
+  storeId     String
+  store       Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name        String
+  slug        String
+  image       String    @db.Text
+  // Shopfront: percent off every product in this collection.
+  salePercent Int?
+  products    Product[]
 
   @@unique([storeId, slug])
 }
@@ -193,6 +198,9 @@ model Product {
   seoDescription    String?          @db.Text
   wholesalePrice    Decimal?         @db.Decimal(10, 2)
   wholesaleMinQty   Int?
+  // Shopfront: percent off this product, and the products recommended with it.
+  salePercent       Int?
+  relatedIds        Json?
   createdAt         DateTime         @default(now())
   variants          ProductVariant[]
   orderItems        OrderItem[]

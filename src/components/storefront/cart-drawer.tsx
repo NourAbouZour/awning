@@ -29,7 +29,7 @@ import {
   saveCheckoutDraft,
 } from "@/app/s/[store]/actions";
 import { hasFeature } from "@/lib/plan";
-import { isSoldOut } from "@/lib/product";
+import { cardPrice, isSoldOut } from "@/lib/product";
 import { themeStyle } from "@/lib/store-theme";
 import { cn, formatMoney } from "@/lib/utils";
 
@@ -181,12 +181,18 @@ export function CartDrawer() {
   const sfInput =
     "h-11 w-full rounded-xl border border-sf-line bg-transparent px-4 text-sm outline-none transition-colors placeholder:text-sf-muted/60 focus:border-sf-ink";
 
-  // Cross-sell (Shopfront and up): in-stock products not in the bag, featured first.
+  // Upsell and cross-sell (Shopfront and up): first the products the owner
+  // linked to what's in the bag, then featured ones, all in stock.
   const inCart = new Set(lines.map((l) => l.product.id));
+  const linked = new Set(lines.flatMap((l) => l.product.relatedIds ?? []));
   const recommendations = showsUpsell
     ? store.products
         .filter((p) => p.status === "active" && !isSoldOut(p) && !inCart.has(p.id))
-        .sort((a, b) => Number(b.featured ?? false) - Number(a.featured ?? false))
+        .sort(
+          (a, b) =>
+            Number(linked.has(b.id)) - Number(linked.has(a.id)) ||
+            Number(b.featured ?? false) - Number(a.featured ?? false),
+        )
         .slice(0, 3)
     : [];
 
@@ -380,7 +386,7 @@ export function CartDrawer() {
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{p.title}</p>
                         <p className="text-xs text-sf-muted">
-                          {formatMoney(p.price, store.currency)}
+                          {formatMoney(cardPrice(p), store.currency)}
                         </p>
                       </div>
                       {p.variantGroup ? (

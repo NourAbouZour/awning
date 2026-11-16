@@ -16,6 +16,12 @@ import { prisma } from "@/lib/db";
 import { cn, formatMoney } from "@/lib/utils";
 import { RANGES, dayKey, parseRange, rangeWindow } from "./range";
 import { SalesChart, type SalesPoint } from "./sales-chart";
+import { AiAnalysis } from "./ai-analysis";
+import type { SalesSnapshot } from "./analysis-types";
+import { aiConfigured } from "@/server/ai";
+
+// The AI advice can take a while; give its server action room to finish.
+export const maxDuration = 60;
 
 const STATUS_LABELS = {
   pending: "Pending",
@@ -197,6 +203,103 @@ export default async function AnalyticsPage({
     .map(([code, c]) => ({ code, ...c }))
     .sort((a, b) => b.times - a.times || b.total - a.total);
 
+  // What the AI advice reads: the numbers above plus a little catalog context.
+  const [catalog, subscribers, abandonedCarts, activeCodes] = await Promise.all([
+    prisma.product.findMany({
+      where: { storeId: store.id },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        inventory: true,
+        salePercent: true,
+        categoryId: true,
+      },
+    }),
+    prisma.subscriber.count({ where: { storeId: store.id } }),
+    prisma.abandonedCart.count({
+      where: { storeId: store.id, recovered: false, createdAt: { gte: start } },
+    }),
+    prisma.discount.count({ where: { storeId: store.id, active: true } }),
+  ]);
+  const cents = (n: number) => Math.round(n * 100) / 100;
+  const short = (s: string) => s.slice(0, 160);
+  const activeCatalog = catalog.filter((p) => p.status === "active");
+  const soldIds = new Set(productRows.map((r) => r.id));
+  // Long ranges are summed by week so the series stays short.
+  const weekly = range > 30;
+  const snapshot: SalesSnapshot = {
+    storeName: short(store.name),
+    currency,
+    rangeDays: range,
+    revenue: cents(revenue),
+    previousRevenue: cents(prevRevenue),
+    orders: sold.length,
+    previousOrders: prevOrders.length,
+    averageOrder: cents(aov),
+    previousAverageOrder: cents(prevAov),
+    newCustomers,
+    previousNewCustomers: prevNewCustomers,
+    seriesGrain: weekly ? "week" : "day",
+    revenueSeries: weekly
+      ? Array.from({ length: Math.ceil(series.length / 7) }, (_, i) => {
+          const week = series.slice(i * 7, i * 7 + 7);
+          return {
+            period: `Week of ${week[0].date}`,
+            revenue: cents(week.reduce((s, d) => s + d.revenue, 0)),
+            orders: week.reduce((s, d) => s + d.orders, 0),
+          };
+        })
+      : series.map((d) => ({
+          period: d.date,
+          revenue: d.revenue,
+          orders: d.orders,
+        })),
+    topByRevenue: byRevenue.map((r) => ({
+      title: short(r.title),
+      units: r.units,
+      revenue: cents(r.revenue),
+    })),
+    topByUnits: byUnits.map((r) => ({
+      title: short(r.title),
+      units: r.units,
+      revenue: cents(r.revenue),
+    })),
+    payments: [...payments.entries()].slice(0, 6).map(([method, p]) => ({
+      method: PAYMENT_LABELS[method] ?? short(method),
+      orders: p.orders,
+      revenue: cents(p.revenue),
+    })),
+    ordersByStatus: statusCounts,
+    discountCodes: codeRows.slice(0, 10).map((c) => ({
+      code: short(c.code),
+      timesUsed: c.times,
+      totalDiscount: cents(c.total),
+    })),
+    catalog: {
+      activeProducts: activeCatalog.length,
+      draftProducts: catalog.length - activeCatalog.length,
+      productsWithNoCollection: catalog.filter((p) => !p.categoryId).length,
+      productsOnSale: activeCatalog.filter((p) => (p.salePercent ?? 0) > 0)
+        .length,
+      activeDiscountCodes: activeCodes,
+      notSelling: activeCatalog
+        .filter((p) => !soldIds.has(p.id))
+        .slice(0, 12)
+        .map((p) => short(p.title)),
+      lowStock: activeCatalog
+        .filter((p) => p.inventory > 0 && p.inventory <= 10)
+        .sort((a, b) => a.inventory - b.inventory)
+        .slice(0, 12)
+        .map((p) => ({ title: short(p.title), unitsLeft: p.inventory })),
+      soldOut: activeCatalog
+        .filter((p) => p.inventory <= 0)
+        .slice(0, 12)
+        .map((p) => short(p.title)),
+    },
+    audience: { newsletterSubscribers: subscribers, abandonedCarts },
+  };
+
   const stats = [
     {
       label: "Revenue",
@@ -286,6 +389,8 @@ export default async function AnalyticsPage({
           </Card>
         ))}
       </div>
+
+      <AiAnalysis key={range} snapshot={snapshot} aiReady={aiConfigured()} />
 
       <Card className="mt-5 p-5">
         <div className="mb-4">

@@ -69,7 +69,7 @@ export function AdminMessagesClient({
     <>
       <PageHeader
         title="Messages"
-        sub="Forgot-password requests and enquiries from the pricing page contact form."
+        sub="Forgot-password requests, messages from the Contact us and pricing pages, and requests and ideas from shop owners."
       />
       {top}
 
@@ -92,7 +92,7 @@ export function AdminMessagesClient({
         <EmptyState
           icon={<Inbox />}
           title="No messages yet"
-          description="When someone fills in the contact form on your pricing page, it lands here."
+          description="Messages from the Contact us page, the pricing page, and shop owners writing from their dashboard land here."
         />
       ) : (
         <Card>
