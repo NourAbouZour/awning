@@ -452,24 +452,25 @@ export function DesignClient({
                 onChange={(e) => patchTheme({ footerText: e.target.value })}
               />
             </div>
-            <div className="flex items-center justify-between gap-3 rounded-lg border border-line px-3 py-2.5">
-              <div>
-                <Label htmlFor="branding">Show &quot;Built on Shopleb&quot;</Label>
-                <p className="mt-0.5 text-xs text-ink-soft">
-                  {canHideBranding
-                    ? "Switch off to remove the Shopleb credit from your footer."
-                    : "Removing the Shopleb credit is part of the Arcade plan."}
-                </p>
+            {canHideBranding && (
+              <div className="flex items-center justify-between gap-3 rounded-lg border border-line px-3 py-2.5">
+                <div>
+                  <Label htmlFor="branding">
+                    Show &quot;Built on Shopleb&quot;
+                  </Label>
+                  <p className="mt-0.5 text-xs text-ink-soft">
+                    Switch off to remove the Shopleb credit from your footer.
+                  </p>
+                </div>
+                <Switch
+                  id="branding"
+                  checked={!draft.hideBranding}
+                  onCheckedChange={(v) =>
+                    setDraft((d) => ({ ...d, hideBranding: !v }))
+                  }
+                />
               </div>
-              <Switch
-                id="branding"
-                checked={!draft.hideBranding || !canHideBranding}
-                disabled={!canHideBranding}
-                onCheckedChange={(v) =>
-                  setDraft((d) => ({ ...d, hideBranding: !v }))
-                }
-              />
-            </div>
+            )}
             <div className="grid gap-4 sm:grid-cols-3">
               {(["instagram", "tiktok", "twitter"] as const).map((k) => (
                 <div key={k} className="space-y-1.5">

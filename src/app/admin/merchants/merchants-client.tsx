@@ -4,7 +4,14 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Ban, CheckCircle2, ExternalLink, Search, Trash2 } from "lucide-react";
+import {
+  Ban,
+  CheckCircle2,
+  ExternalLink,
+  Search,
+  Trash2,
+  UserX,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +36,7 @@ import {
   setBillingPaid,
   setAccountActive,
   deleteMerchantStore,
+  deleteMerchantAccount,
 } from "@/app/admin/actions";
 import { PLAN_LABELS, type Plan } from "@/lib/plan";
 import type { MerchantRow } from "@/server/admin";
@@ -45,6 +53,25 @@ export function MerchantsClient({ merchants }: { merchants: MerchantRow[] }) {
     owner: string;
   } | null>(null);
 
+  const [accountToDelete, setAccountToDelete] = React.useState<{
+    id: string;
+    name: string;
+    email: string;
+    stores: string[];
+  } | null>(null);
+
+  function confirmDeleteAccount() {
+    if (!accountToDelete) return;
+    const target = accountToDelete;
+    startTransition(async () => {
+      const res = await deleteMerchantAccount(target.id);
+      if (res.error) toast.error(res.error);
+      else toast.success(`${target.name}'s account deleted`);
+      setAccountToDelete(null);
+      router.refresh();
+    });
+  }
+
   function confirmDelete() {
     if (!toDelete) return;
     const target = toDelete;
@@ -60,7 +87,7 @@ export function MerchantsClient({ merchants }: { merchants: MerchantRow[] }) {
   const filtered = merchants.filter(
     (m) =>
       !query ||
-      `${m.name} ${m.email} ${m.storeName ?? ""}`
+      `${m.name} ${m.email} ${m.stores.map((s) => `${s.name} ${s.slug}`).join(" ")}`
         .toLowerCase()
         .includes(query.toLowerCase()),
   );
@@ -96,7 +123,7 @@ export function MerchantsClient({ merchants }: { merchants: MerchantRow[] }) {
 
         {filtered.length === 0 ? (
           <p className="p-8 text-center text-sm text-ink-soft">
-            No merchants match.
+            No accounts match.
           </p>
         ) : (
           <ul className="divide-y divide-line">
@@ -108,6 +135,7 @@ export function MerchantsClient({ merchants }: { merchants: MerchantRow[] }) {
                 <div className="min-w-48 flex-1">
                   <p className="flex items-center gap-2 text-sm font-medium text-ink">
                     {m.name}
+                    {m.isAdmin && <Badge variant="green">Your account</Badge>}
                     {!m.active && <Badge variant="amber">Suspended</Badge>}
                   </p>
                   <p className="text-xs text-ink-soft">{m.email}</p>
@@ -116,7 +144,7 @@ export function MerchantsClient({ merchants }: { merchants: MerchantRow[] }) {
                   ) : (
                     <ul className="mt-0.5 space-y-0.5">
                       {m.stores.map((s) => (
-                        <li key={s.id} className="flex items-center gap-2">
+                        <li key={s.id} className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                           <Link
                             href={`/s/${s.slug}`}
                             target="_blank"
@@ -132,7 +160,7 @@ export function MerchantsClient({ merchants }: { merchants: MerchantRow[] }) {
                             onClick={() =>
                               setToDelete({ ...s, owner: m.name })
                             }
-                            className="inline-flex items-center gap-1 rounded px-1 py-0.5 text-[11px] font-medium text-danger hover:bg-danger-wash"
+                            className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded px-1 py-0.5 text-[11px] font-medium text-danger hover:bg-danger-wash"
                             aria-label={`Delete the store ${s.name}`}
                           >
                             <Trash2 className="size-3" />
@@ -209,7 +237,8 @@ export function MerchantsClient({ merchants }: { merchants: MerchantRow[] }) {
                   {m.billingPaid ? "Paid ✓" : "Mark paid"}
                 </Button>
 
-                {/* active */}
+                {/* active (never for the owner's own account) */}
+                {!m.isAdmin && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -240,11 +269,70 @@ export function MerchantsClient({ merchants }: { merchants: MerchantRow[] }) {
                     </>
                   )}
                 </Button>
+                )}
+
+                {/* delete the whole account */}
+                {!m.isAdmin && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={pending}
+                    className="text-danger hover:bg-danger-wash"
+                    onClick={() =>
+                      setAccountToDelete({
+                        id: m.id,
+                        name: m.name,
+                        email: m.email,
+                        stores: m.stores.map((s) => s.name),
+                      })
+                    }
+                  >
+                    <UserX className="size-3.5" />
+                    Delete account
+                  </Button>
+                )}
               </li>
             ))}
           </ul>
         )}
       </Card>
+
+      <Dialog
+        open={!!accountToDelete}
+        onOpenChange={(v) => !v && !pending && setAccountToDelete(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Delete {accountToDelete?.name}&apos;s account for good?
+            </DialogTitle>
+            <DialogDescription>
+              This removes the login for {accountToDelete?.email}
+              {accountToDelete && accountToDelete.stores.length > 0
+                ? ` and ${accountToDelete.stores.length === 1 ? "their store" : "their stores"} (${accountToDelete.stores.join(", ")}) with all products, orders, customers and subscribers`
+                : ""}
+              . It can&apos;t be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setAccountToDelete(null)}
+              disabled={pending}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-danger text-white hover:bg-danger/90"
+              onClick={confirmDeleteAccount}
+              disabled={pending}
+            >
+              <UserX className="size-3.5" />
+              Delete account forever
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!toDelete} onOpenChange={(v) => !v && !pending && setToDelete(null)}>
         <DialogContent>

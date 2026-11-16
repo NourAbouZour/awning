@@ -5,14 +5,17 @@ import { prisma } from "@/lib/db";
 import { randomInt } from "node:crypto";
 import { requireSuperadmin, hashPassword } from "@/lib/auth";
 import type { Plan } from "@/lib/plan";
-import { deleteStoreFully } from "@/server/stores";
+import { deleteAccountFully, deleteStoreFully } from "@/server/stores";
 
 function revalidateAdmin() {
   revalidatePath("/admin");
   revalidatePath("/admin/merchants");
 }
 
-/** Change a merchant's plan. Never touches other superadmins. */
+/** Accounts whose plan and payment the platform owner manages. */
+const PLAN_ROLES = ["merchant", "superadmin"] as const;
+
+/** Change an account's plan (shop accounts, and the owner's own stores). */
 export async function setMerchantPlan(
   userId: string,
   plan: Plan,
@@ -23,7 +26,7 @@ export async function setMerchantPlan(
     select: { stores: { select: { slug: true } } },
   });
   await prisma.user.updateMany({
-    where: { id: userId, role: "merchant" },
+    where: { id: userId, role: { in: [...PLAN_ROLES] } },
     data: { plan, requestedPlan: null, planRequestedAt: null },
   });
   revalidateAdmin();
@@ -36,7 +39,7 @@ export async function setBillingPaid(
 ): Promise<void> {
   await requireSuperadmin();
   await prisma.user.updateMany({
-    where: { id: userId, role: "merchant" },
+    where: { id: userId, role: { in: [...PLAN_ROLES] } },
     data: { billingPaid: paid },
   });
   revalidateAdmin();
@@ -159,4 +162,26 @@ export async function dismissPasswordReset(requestId: string): Promise<void> {
   await requireSuperadmin();
   await prisma.passwordReset.deleteMany({ where: { id: requestId } });
   revalidatePath("/admin", "layout");
+}
+
+/**
+ * Delete a shop account for good, with all of its stores. Only ordinary shop
+ * accounts can be deleted here, never the platform owner's.
+ */
+export async function deleteMerchantAccount(
+  userId: string,
+): Promise<{ error?: string }> {
+  await requireSuperadmin();
+  const target = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true, stores: { select: { slug: true } } },
+  });
+  if (!target) return { error: "Account not found." };
+  if (target.role !== "merchant")
+    return { error: "This account can't be deleted from here." };
+  await deleteAccountFully(userId);
+  revalidateAdmin();
+  revalidatePath("/admin", "layout");
+  for (const s of target.stores) revalidatePath(`/s/${s.slug}`, "layout");
+  return {};
 }

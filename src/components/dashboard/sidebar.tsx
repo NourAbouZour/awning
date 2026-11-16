@@ -12,7 +12,6 @@ import {
   Globe,
   Home,
   Inbox,
-  Lock,
   LogOut,
   Mail,
   Menu,
@@ -21,6 +20,7 @@ import {
   Paintbrush,
   Plus,
   Settings,
+  Shield,
   ShoppingBasket,
   ShoppingCart,
   Tag,
@@ -45,13 +45,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { logout } from "@/app/(auth)/actions";
 import { switchStore } from "@/app/dashboard/store-actions";
-import {
-  PLAN_LABELS,
-  hasFeature,
-  planFor,
-  type Feature,
-  type Plan,
-} from "@/lib/plan";
+import { hasFeature, type Feature, type Plan } from "@/lib/plan";
 import { cn } from "@/lib/utils";
 
 export interface SidebarStore {
@@ -64,6 +58,8 @@ export interface SidebarStore {
 export interface SidebarContext {
   plan: Plan;
   isOwner: boolean;
+  /** The platform owner, who also gets a link back to the admin panel. */
+  isAdmin: boolean;
   stores: { id: string; name: string; slug: string }[];
 }
 
@@ -79,7 +75,7 @@ interface NavItem {
   icon: typeof Home;
   exact?: boolean;
   badge?: number;
-  /** Paid feature: shows the plan it needs until it is unlocked. */
+  /** Paid feature: the page is listed only when the plan includes it. */
   feature?: Feature;
   ownerOnly?: boolean;
 }
@@ -145,7 +141,12 @@ function buildNav(unread: number, ctx: SidebarContext): NavItem[] {
     },
     { href: "/dashboard/settings", label: "Settings", icon: Settings },
   ];
-  return items.filter((i) => !i.ownerOnly || ctx.isOwner);
+  // Paid pages appear only once the store's plan includes them.
+  return items.filter(
+    (i) =>
+      (!i.ownerOnly || ctx.isOwner) &&
+      (!i.feature || hasFeature(ctx.plan, i.feature)),
+  );
 }
 
 function NavLinks({
@@ -165,7 +166,6 @@ function NavLinks({
         const active = item.exact
           ? pathname === item.href
           : pathname.startsWith(item.href);
-        const locked = !!item.feature && !hasFeature(ctx.plan, item.feature);
         return (
           <Link
             key={item.href}
@@ -183,17 +183,6 @@ function NavLinks({
               className={cn("size-4", active ? "text-green" : "text-ink-soft")}
             />
             <span className="truncate">{item.label}</span>
-            {locked && item.feature && (
-              <span
-                className="ml-auto flex shrink-0 items-center text-ink-soft"
-                title={`${PLAN_LABELS[planFor(item.feature)]} plan`}
-              >
-                <Lock className="size-3" aria-hidden />
-                <span className="sr-only">
-                  , needs the {PLAN_LABELS[planFor(item.feature)]} plan
-                </span>
-              </span>
-            )}
             {!!item.badge && (
               <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-green px-1.5 text-[11px] font-semibold text-white">
                 {item.badge}
@@ -266,6 +255,15 @@ function StoreFooter({
   return (
     <div className="mt-auto border-t border-line p-3">
       <StoreSwitcher store={store} ctx={ctx} />
+      {ctx.isAdmin && (
+        <Link
+          href="/admin"
+          className="mb-1 flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-ink-body transition-colors hover:bg-ink/4 hover:text-ink"
+        >
+          <Shield className="size-4 text-ink-soft" />
+          Shopleb admin
+        </Link>
+      )}
       <Link
         href={`/s/${store.slug}`}
         target="_blank"

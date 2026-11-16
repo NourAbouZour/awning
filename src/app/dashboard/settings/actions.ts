@@ -99,7 +99,23 @@ export async function saveSettings(
 export async function setOwnPlan(plan: Plan): Promise<{ error?: string; pending?: boolean }> {
   const user = await getCurrentUser();
   if (!user) return { error: "Please log in again." };
-  if (user.role !== "merchant") return { error: "Only the store owner can change the plan." };
+  if (user.role === "staff")
+    return { error: "Only the store owner can change the plan." };
+  if (user.role === "superadmin") {
+    // The platform owner approves plans, so their own change applies at once.
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        plan,
+        billingPaid: plan !== "stall",
+        requestedPlan: null,
+        planRequestedAt: null,
+      },
+    });
+    revalidatePath("/dashboard", "layout");
+    revalidatePath("/admin", "layout");
+    return { pending: false };
+  }
 
   if (plan === user.plan) {
     // Picking the current plan again withdraws any pending request.

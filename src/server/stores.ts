@@ -80,3 +80,15 @@ export async function deleteStoreFully(storeId: string): Promise<void> {
     await tx.store.delete({ where: { id: storeId } });
   });
 }
+
+/**
+ * Delete an account with every store it owns and everything inside them
+ * (including those stores' staff logins). This cannot be undone.
+ */
+export async function deleteAccountFully(userId: string): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    // Orders hold a RESTRICT link to customers, so they go first.
+    await tx.order.deleteMany({ where: { store: { userId } } });
+    await tx.user.delete({ where: { id: userId } });
+  });
+}

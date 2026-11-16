@@ -5,6 +5,8 @@ export interface MerchantRow {
   id: string;
   name: string;
   email: string;
+  /** The platform owner's own account (it can own stores too). */
+  isAdmin: boolean;
   plan: Plan;
   /** A plan the merchant asked for, waiting for approval. */
   requestedPlan: Plan | null;
@@ -22,7 +24,13 @@ export interface MerchantRow {
 
 export async function listMerchants(): Promise<MerchantRow[]> {
   const users = await prisma.user.findMany({
-    where: { role: "merchant" },
+    // Every shop account, plus the platform owner's account when it owns a store.
+    where: {
+      OR: [
+        { role: "merchant" },
+        { role: "superadmin", stores: { some: {} } },
+      ],
+    },
     include: {
       stores: {
         select: {
@@ -44,6 +52,7 @@ export async function listMerchants(): Promise<MerchantRow[]> {
       id: u.id,
       name: u.name,
       email: u.email,
+      isAdmin: u.role === "superadmin",
       plan: u.plan as Plan,
       requestedPlan: (u.requestedPlan as Plan | null) ?? null,
       planRequestedAt: u.planRequestedAt?.toISOString() ?? null,

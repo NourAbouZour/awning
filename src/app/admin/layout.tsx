@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LayoutDashboard, Inbox, LogOut, Store, Shield } from "lucide-react";
+import {
+  LayoutDashboard,
+  Inbox,
+  LogOut,
+  Store,
+  Shield,
+  ShoppingBag,
+} from "lucide-react";
+import { prisma } from "@/lib/db";
 import { requireSuperadmin } from "@/lib/auth";
 import { logout } from "@/app/(auth)/actions";
 import { adminWaiting } from "@/server/admin";
@@ -19,8 +27,16 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  await requireSuperadmin();
-  const waiting = await adminWaiting();
+  const admin = await requireSuperadmin();
+  const [waiting, ownStore] = await Promise.all([
+    adminWaiting(),
+    // The owner's account can run a shop of its own.
+    prisma.store.findFirst({
+      where: { userId: admin.id },
+      select: { name: true },
+      orderBy: { createdAt: "asc" },
+    }),
+  ]);
   // What is waiting for the owner behind each menu item.
   const badges: Record<string, number> = {
     "/admin": waiting.planRequests + waiting.passwordResets,
@@ -52,6 +68,15 @@ export default async function AdminLayout({
           ))}
         </nav>
         <div className="mt-auto border-t border-white/10 p-3">
+          {ownStore && (
+            <Link
+              href="/dashboard"
+              className="mb-1 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <ShoppingBag className="size-4" />
+              <span className="truncate">{ownStore.name} dashboard</span>
+            </Link>
+          )}
           <form action={logout}>
             <button
               type="submit"
@@ -68,7 +93,12 @@ export default async function AdminLayout({
           <span className="flex items-center gap-2 font-display font-bold">
             <Shield className="size-4" /> Admin
           </span>
-          <nav className="flex gap-3 text-[13px]">
+          <nav className="flex flex-wrap justify-end gap-x-3 gap-y-1 text-[13px]">
+            {ownStore && (
+              <Link href="/dashboard" className="hover:underline">
+                My store
+              </Link>
+            )}
             {nav.map((item) => (
               <Link key={item.href} href={item.href} className="hover:underline">
                 {item.label}

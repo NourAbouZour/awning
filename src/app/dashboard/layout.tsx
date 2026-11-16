@@ -57,6 +57,7 @@ export default async function DashboardLayout({
   const sidebarCtx = {
     plan,
     isOwner,
+    isAdmin: user.role === "superadmin",
     stores: ownedStores,
   };
 
