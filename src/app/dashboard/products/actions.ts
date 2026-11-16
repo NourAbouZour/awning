@@ -4,20 +4,17 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { requireCurrentStore, getCurrentUser } from "@/lib/auth";
-import { limitReached, FREE_PRODUCT_LIMIT, type Plan } from "@/lib/plan";
+import { requireCurrentStore, getCurrentPlan } from "@/lib/auth";
+import { hasFeature, limitReached, FREE_PRODUCT_LIMIT } from "@/lib/plan";
 
 const LIMIT_MESSAGE = `You've reached ${FREE_PRODUCT_LIMIT} products on the free plan, upgrade to add more.`;
-
-async function currentPlan(): Promise<Plan> {
-  const user = await getCurrentUser();
-  return (user?.plan as Plan) ?? "stall";
-}
 
 export interface VariantInput {
   name: string;
   price?: number | null;
   stock: number;
+  /** This variant's price is the one shown on shop cards. */
+  isDefault?: boolean;
 }
 
 export interface ProductInput {
@@ -29,11 +26,17 @@ export interface ProductInput {
   compareAt?: number | null;
   inventory: number;
   sku: string;
+  /** Empty string = no collection (the product then stays off the storefront). */
   categoryId: string;
   status: "active" | "draft";
   images: string[];
   variantLabel?: string | null;
   variants: VariantInput[];
+  // Arcade only; ignored on other plans.
+  wholesalePrice?: number | null;
+  wholesaleMinQty?: number | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
 }
 
 export interface ProductActionState {
@@ -81,7 +84,12 @@ function validate(input: ProductInput): string | null {
   if (!(input.price > 0)) return "Set a price above zero.";
   if (input.compareAt != null && input.compareAt <= input.price)
     return "Compare-at should be higher than the price.";
-  if (!input.categoryId) return "Pick a collection.";
+  if (
+    input.wholesalePrice != null &&
+    (!(input.wholesalePrice > 0) ||
+      !(input.wholesaleMinQty && input.wholesaleMinQty >= 2))
+  )
+    return "Wholesale needs a price and a minimum quantity of 2 or more.";
   return null;
 }
 
@@ -93,24 +101,73 @@ function cleanImages(images: string[]): string[] {
 
 function cleanVariants(input: ProductInput) {
   if (!input.variantLabel || input.variants.length === 0) {
-    return { variantGroupLabel: null, variants: [] as VariantInput[] };
+    return { variantGroupLabel: null, variants: [] as Required<VariantInput>[] };
   }
   const variants = input.variants
     .filter((v) => v.name.trim())
     .map((v) => ({
       name: v.name.trim(),
       price: v.price != null && v.price > 0 ? v.price : null,
-      stock: Number.isFinite(v.stock) ? v.stock : 0,
+      stock: Number.isFinite(v.stock) ? Math.max(0, Math.floor(v.stock)) : 0,
+      isDefault: !!v.isDefault,
     }));
+  // Exactly one variant drives the card price; default to the first.
+  let seen = false;
+  for (const v of variants) {
+    if (v.isDefault && seen) v.isDefault = false;
+    if (v.isDefault) seen = true;
+  }
+  if (variants.length && !seen) variants[0].isDefault = true;
   return { variantGroupLabel: input.variantLabel.trim(), variants };
 }
 
+function variantCreate(variants: Required<VariantInput>[]) {
+  return variants.length
+    ? {
+        create: variants.map((v) => ({
+          name: v.name,
+          price: v.price != null ? new Prisma.Decimal(v.price) : null,
+          stock: v.stock,
+          isDefault: v.isDefault,
+        })),
+      }
+    : undefined;
+}
+
 async function assertCategory(storeId: string, categoryId: string) {
+  if (!categoryId) return;
   const cat = await prisma.category.findFirst({
     where: { id: categoryId, storeId },
     select: { id: true },
   });
   if (!cat) throw new Error("Collection does not belong to this store.");
+}
+
+/** Wholesale and SEO fields, saved only on a plan that includes them. */
+async function arcadeFields(input: ProductInput) {
+  const plan = await getCurrentPlan();
+  const wholesale = hasFeature(plan, "wholesale");
+  const seo = hasFeature(plan, "aiSeo");
+  const hasWholesale = input.wholesalePrice != null && input.wholesalePrice > 0;
+  return {
+    ...(wholesale
+      ? {
+          wholesalePrice: hasWholesale
+            ? new Prisma.Decimal(input.wholesalePrice as number)
+            : null,
+          wholesaleMinQty:
+            hasWholesale && input.wholesaleMinQty
+              ? Math.max(2, Math.floor(input.wholesaleMinQty))
+              : null,
+        }
+      : {}),
+    ...(seo
+      ? {
+          seoTitle: input.seoTitle?.trim().slice(0, 70) || null,
+          seoDescription: input.seoDescription?.trim().slice(0, 160) || null,
+        }
+      : {}),
+  };
 }
 
 export async function createProduct(
@@ -121,7 +178,7 @@ export async function createProduct(
   if (err) return { error: err };
 
   const count = await prisma.product.count({ where: { storeId: store.id } });
-  if (limitReached(count, await currentPlan())) return { error: LIMIT_MESSAGE };
+  if (limitReached(count, await getCurrentPlan())) return { error: LIMIT_MESSAGE };
 
   await assertCategory(store.id, input.categoryId);
 
@@ -138,23 +195,16 @@ export async function createProduct(
       price: new Prisma.Decimal(input.price),
       compareAt:
         input.compareAt != null ? new Prisma.Decimal(input.compareAt) : null,
-      categoryId: input.categoryId,
+      categoryId: input.categoryId || null,
       images: cleanImages(input.images) as unknown as Prisma.InputJsonValue,
       inventory: variants.length
-        ? variants.reduce((sum, v) => sum + Math.max(0, v.stock), 0)
+        ? variants.reduce((sum, v) => sum + v.stock, 0)
         : Math.max(0, input.inventory | 0),
       sku: input.sku ?? "",
       status: input.status,
+      ...(await arcadeFields(input)),
       variantGroupLabel,
-      variants: variants.length
-        ? {
-            create: variants.map((v) => ({
-              name: v.name,
-              price: v.price != null ? new Prisma.Decimal(v.price) : null,
-              stock: v.stock,
-            })),
-          }
-        : undefined,
+      variants: variantCreate(variants),
     },
   });
 
@@ -180,6 +230,7 @@ export async function updateProduct(
 
   const slug = await uniqueSlug(store.id, input.title, input.id);
   const { variantGroupLabel, variants } = cleanVariants(input);
+  const extra = await arcadeFields(input);
 
   await prisma.$transaction([
     prisma.productVariant.deleteMany({ where: { productId: input.id } }),
@@ -193,23 +244,16 @@ export async function updateProduct(
         price: new Prisma.Decimal(input.price),
         compareAt:
           input.compareAt != null ? new Prisma.Decimal(input.compareAt) : null,
-        categoryId: input.categoryId,
+        categoryId: input.categoryId || null,
         images: cleanImages(input.images) as unknown as Prisma.InputJsonValue,
         inventory: variants.length
-        ? variants.reduce((sum, v) => sum + Math.max(0, v.stock), 0)
-        : Math.max(0, input.inventory | 0),
+          ? variants.reduce((sum, v) => sum + v.stock, 0)
+          : Math.max(0, input.inventory | 0),
         sku: input.sku ?? "",
         status: input.status,
+        ...extra,
         variantGroupLabel,
-        variants: variants.length
-          ? {
-              create: variants.map((v) => ({
-                name: v.name,
-                price: v.price != null ? new Prisma.Decimal(v.price) : null,
-                stock: v.stock,
-              })),
-            }
-          : undefined,
+        variants: variantCreate(variants),
       },
     }),
   ]);
@@ -265,7 +309,7 @@ export async function duplicateProduct(
   const store = await requireCurrentStore();
 
   const count = await prisma.product.count({ where: { storeId: store.id } });
-  if (limitReached(count, await currentPlan())) return { error: LIMIT_MESSAGE };
+  if (limitReached(count, await getCurrentPlan())) return { error: LIMIT_MESSAGE };
 
   const src = await prisma.product.findFirst({
     where: { id, storeId: store.id },
@@ -287,6 +331,10 @@ export async function duplicateProduct(
       inventory: src.inventory,
       sku: src.sku ? `${src.sku}-COPY` : "",
       status: "draft",
+      seoTitle: src.seoTitle,
+      seoDescription: src.seoDescription,
+      wholesalePrice: src.wholesalePrice,
+      wholesaleMinQty: src.wholesaleMinQty,
       variantGroupLabel: src.variantGroupLabel,
       variants: src.variants.length
         ? {
@@ -294,6 +342,7 @@ export async function duplicateProduct(
               name: v.name,
               price: v.price,
               stock: v.stock,
+              isDefault: v.isDefault,
             })),
           }
         : undefined,

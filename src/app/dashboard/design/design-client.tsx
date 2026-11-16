@@ -38,10 +38,18 @@ const SECTION_LABELS: Record<string, string> = {
   carousel: "Best sellers carousel",
   story: "Brand story",
   trust: "Trust badges",
+  map: "Google Map and directions",
   newsletter: "Newsletter signup",
 };
 
-export function DesignClient({ initialStore }: { initialStore: Store }) {
+export function DesignClient({
+  initialStore,
+  canHideBranding,
+}: {
+  initialStore: Store;
+  /** Arcade: the owner may remove the "Built on Shopleb" footer credit. */
+  canHideBranding: boolean;
+}) {
   const [draft, setDraft] = React.useState<Store>(initialStore);
   const [saving, setSaving] = React.useState(false);
   const t = draft.theme;
@@ -76,10 +84,12 @@ export function DesignClient({ initialStore }: { initialStore: Store }) {
     React.startTransition(async () => {
       const res = await saveDesign({
         logoUrl: draft.logoUrl ?? null,
+        hideBranding: !!draft.hideBranding,
         theme: {
           brandColor: t.brandColor,
           fontPairing: t.fontPairing,
           announcement: t.announcement,
+          showAnnouncement: t.showAnnouncement,
           heroImage: t.heroImage,
           heroHeadline: t.heroHeadline,
           heroSub: t.heroSub,
@@ -229,13 +239,29 @@ export function DesignClient({ initialStore }: { initialStore: Store }) {
           <Card className="space-y-5 p-5">
             <h2 className="text-sm font-semibold text-ink">Homepage</h2>
             <div className="space-y-1.5">
-              <Label htmlFor="announcement">Announcement bar</Label>
+              <div className="flex items-center justify-between gap-3">
+                <Label htmlFor="announcement">Announcement bar</Label>
+                <label className="flex items-center gap-2 text-xs text-ink-soft">
+                  {t.showAnnouncement ? "Showing" : "Hidden"}
+                  <Switch
+                    checked={t.showAnnouncement}
+                    onCheckedChange={(v) => patchTheme({ showAnnouncement: v })}
+                    aria-label="Show the announcement bar"
+                  />
+                </label>
+              </div>
               <Input
                 id="announcement"
                 value={t.announcement}
                 onChange={(e) => patchTheme({ announcement: e.target.value })}
                 maxLength={80}
+                disabled={!t.showAnnouncement}
+                placeholder="e.g. Free shipping over $50"
               />
+              <p className="text-xs text-ink-soft">
+                The strip across the top of your store. Change the words, or
+                switch it off to hide it.
+              </p>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="headline">Hero headline</Label>
@@ -426,6 +452,24 @@ export function DesignClient({ initialStore }: { initialStore: Store }) {
                 onChange={(e) => patchTheme({ footerText: e.target.value })}
               />
             </div>
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-line px-3 py-2.5">
+              <div>
+                <Label htmlFor="branding">Show &quot;Built on Shopleb&quot;</Label>
+                <p className="mt-0.5 text-xs text-ink-soft">
+                  {canHideBranding
+                    ? "Switch off to remove the Shopleb credit from your footer."
+                    : "Removing the Shopleb credit is part of the Arcade plan."}
+                </p>
+              </div>
+              <Switch
+                id="branding"
+                checked={!draft.hideBranding || !canHideBranding}
+                disabled={!canHideBranding}
+                onCheckedChange={(v) =>
+                  setDraft((d) => ({ ...d, hideBranding: !v }))
+                }
+              />
+            </div>
             <div className="grid gap-4 sm:grid-cols-3">
               {(["instagram", "tiktok", "twitter"] as const).map((k) => (
                 <div key={k} className="space-y-1.5">
@@ -457,7 +501,7 @@ export function DesignClient({ initialStore }: { initialStore: Store }) {
               />
               Live preview, scroll to see the whole homepage
             </p>
-            <BrowserFrame url={`${draft.slug}.shopleb.shop`}>
+            <BrowserFrame url={`shopleb.com/s/${draft.slug}`}>
               <div className="max-h-[72vh] overflow-y-auto">
                 <StorePreview store={draft} />
               </div>

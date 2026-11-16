@@ -5,8 +5,10 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
+  AlertTriangle,
   Bold,
   GripVertical,
+  Sparkles,
   Italic,
   List,
   Loader2,
@@ -33,6 +35,7 @@ import {
   type ProductInput,
 } from "@/app/dashboard/products/actions";
 import { ImageUploadButton } from "@/components/ui/image-upload-button";
+import { generateProductCopy } from "@/app/dashboard/products/ai-actions";
 import type { Category, Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -41,14 +44,27 @@ interface VariantRow {
   name: string;
   price: string;
   stock: string;
+  isDefault: boolean;
 }
+
+/** Which paid product tools the store's plan includes. */
+export interface ProductFormFeatures {
+  wholesale: boolean;
+  aiSeo: boolean;
+  /** The server has AI credentials, so the AI button can work. */
+  aiReady: boolean;
+}
+
+const NO_COLLECTION = "__none__";
 
 export function ProductForm({
   product,
   categories,
+  features = { wholesale: false, aiSeo: false, aiReady: false },
 }: {
   product?: Product;
   categories: Category[];
+  features?: ProductFormFeatures;
 }) {
   const router = useRouter();
   const isEdit = !!product;
@@ -69,8 +85,20 @@ export function ProductForm({
   );
   const [sku, setSku] = React.useState(product?.sku ?? "");
   const [categoryId, setCategoryId] = React.useState(
-    product?.categoryId ?? categories[0]?.id ?? ""
+    product ? product.categoryId : (categories[0]?.id ?? "")
   );
+  const [wholesalePrice, setWholesalePrice] = React.useState(
+    product?.wholesalePrice ? String(product.wholesalePrice) : ""
+  );
+  const [wholesaleMinQty, setWholesaleMinQty] = React.useState(
+    product?.wholesaleMinQty ? String(product.wholesaleMinQty) : ""
+  );
+  const [seoTitle, setSeoTitle] = React.useState(product?.seoTitle ?? "");
+  const [seoDescription, setSeoDescription] = React.useState(
+    product?.seoDescription ?? ""
+  );
+  const [aiNotes, setAiNotes] = React.useState("");
+  const [writing, setWriting] = React.useState(false);
   const [active, setActive] = React.useState(
     product ? product.status === "active" : true
   );
@@ -78,12 +106,18 @@ export function ProductForm({
     product?.variantGroup?.label ?? ""
   );
   const [variants, setVariants] = React.useState<VariantRow[]>(
-    product?.variantGroup?.variants.map((v) => ({
-      id: v.id,
-      name: v.name,
-      price: v.price ? String(v.price) : "",
-      stock: String(v.stock),
-    })) ?? []
+    () => {
+      const vs = product?.variantGroup?.variants ?? [];
+      // Older products have no option marked: the first one drives the card.
+      const marked = vs.some((v) => v.isDefault);
+      return vs.map((v, i) => ({
+        id: v.id,
+        name: v.name,
+        price: v.price ? String(v.price) : "",
+        stock: String(v.stock),
+        isDefault: marked ? !!v.isDefault : i === 0,
+      }));
+    }
   );
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [saving, setSaving] = React.useState(false);
@@ -115,12 +149,39 @@ export function ProductForm({
     setImageUrl("");
   }
 
+  function writeWithAi() {
+    setWriting(true);
+    React.startTransition(async () => {
+      const res = await generateProductCopy({
+        title,
+        price,
+        notes: aiNotes || description,
+        collection: categories.find((c) => c.id === categoryId)?.name,
+      });
+      setWriting(false);
+      if (res.error) {
+        toast.error(res.error);
+        return;
+      }
+      if (res.description) setDescription(res.description);
+      if (res.seoTitle) setSeoTitle(res.seoTitle);
+      if (res.seoDescription) setSeoDescription(res.seoDescription);
+      toast.success("Description and SEO written. Read it over before saving.");
+    });
+  }
+
   function save() {
     const next: Record<string, string> = {};
     if (title.trim().length < 2) next.title = "Give the product a name.";
     if (!price || Number(price) <= 0) next.price = "Set a price above zero.";
     if (compareAt && Number(compareAt) <= Number(price))
       next.compareAt = "Compare-at should be higher than the price.";
+    if (
+      features.wholesale &&
+      wholesalePrice &&
+      (Number(wholesalePrice) <= 0 || Number(wholesaleMinQty) < 2)
+    )
+      next.wholesale = "Set a wholesale price and a minimum of 2 or more.";
     setErrors(next);
     if (Object.keys(next).length) {
       toast.error("A couple of fields need attention");
@@ -144,7 +205,12 @@ export function ProductForm({
         name: v.name,
         price: v.price ? Number(v.price) : null,
         stock: v.stock ? Number(v.stock) : 0,
+        isDefault: v.isDefault,
       })),
+      wholesalePrice: wholesalePrice ? Number(wholesalePrice) : null,
+      wholesaleMinQty: wholesaleMinQty ? Number(wholesaleMinQty) : null,
+      seoTitle,
+      seoDescription,
     };
 
     setSaving(true);
@@ -315,7 +381,13 @@ export function ProductForm({
                 onClick={() => {
                   setVariantLabel("Size");
                   setVariants([
-                    { id: crypto.randomUUID(), name: "", price: "", stock: "" },
+                    {
+                      id: crypto.randomUUID(),
+                      name: "",
+                      price: "",
+                      stock: "",
+                      isDefault: true,
+                    },
                   ]);
                 }}
               >
@@ -340,7 +412,8 @@ export function ProductForm({
                 />
               </div>
               <div className="overflow-hidden rounded-lg border border-line">
-                <div className="grid grid-cols-[1.5fr_1fr_1fr_2.5rem] gap-2 border-b border-line bg-canvas px-3 py-2 text-xs font-medium text-ink-soft">
+                <div className="grid grid-cols-[2.75rem_1.5fr_1fr_1fr_2.5rem] gap-2 border-b border-line bg-canvas px-3 py-2 text-xs font-medium text-ink-soft">
+                  <span title="The price shown on shop cards">Card</span>
                   <span>{variantLabel || "Option"}</span>
                   <span>Price (optional)</span>
                   <span>Stock</span>
@@ -349,8 +422,22 @@ export function ProductForm({
                 {variants.map((v, i) => (
                   <div
                     key={v.id}
-                    className="grid grid-cols-[1.5fr_1fr_1fr_2.5rem] items-center gap-2 border-b border-line px-3 py-2 last:border-0"
+                    className="grid grid-cols-[2.75rem_1.5fr_1fr_1fr_2.5rem] items-center gap-2 border-b border-line px-3 py-2 last:border-0"
                   >
+                    <label className="flex justify-center">
+                      <input
+                        type="radio"
+                        name="card-variant"
+                        className="size-4 accent-[var(--green)]"
+                        checked={v.isDefault}
+                        aria-label={`Show ${v.name || "this option"}'s price on shop cards`}
+                        onChange={() =>
+                          setVariants((vs) =>
+                            vs.map((x) => ({ ...x, isDefault: x.id === v.id }))
+                          )
+                        }
+                      />
+                    </label>
                     <Input
                       aria-label={`${variantLabel || "Variant"} ${i + 1} name`}
                       value={v.name}
@@ -397,7 +484,12 @@ export function ProductForm({
                       size="icon-sm"
                       aria-label={`Remove variant ${i + 1}`}
                       onClick={() =>
-                        setVariants((vs) => vs.filter((x) => x.id !== v.id))
+                        setVariants((vs) => {
+                          const rest = vs.filter((x) => x.id !== v.id);
+                          if (v.isDefault && rest.length)
+                            rest[0] = { ...rest[0], isDefault: true };
+                          return rest;
+                        })
                       }
                     >
                       <Trash2 className="size-3.5 text-ink-soft" />
@@ -405,13 +497,24 @@ export function ProductForm({
                   </div>
                 ))}
               </div>
+              <p className="text-xs text-ink-soft">
+                The price of the option ticked under &quot;Card&quot; is the one
+                shown on your shop cards. Leave a price blank to use the main
+                price.
+              </p>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() =>
                   setVariants((vs) => [
                     ...vs,
-                    { id: crypto.randomUUID(), name: "", price: "", stock: "" },
+                    {
+                      id: crypto.randomUUID(),
+                      name: "",
+                      price: "",
+                      stock: "",
+                      isDefault: vs.length === 0,
+                    },
                   ])
                 }
               >
@@ -501,11 +604,18 @@ export function ProductForm({
           </div>
           <div className="space-y-1.5">
             <Label>Collection</Label>
-            <Select value={categoryId} onValueChange={setCategoryId}>
-              <SelectTrigger aria-label="Collection">
+            <Select
+              value={categoryId || NO_COLLECTION}
+              onValueChange={(v) => setCategoryId(v === NO_COLLECTION ? "" : v)}
+            >
+              <SelectTrigger
+                aria-label="Collection"
+                className={cn(!categoryId && "border-danger text-danger")}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value={NO_COLLECTION}>No collection</SelectItem>
                 {categories.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.name}
@@ -513,8 +623,129 @@ export function ProductForm({
                 ))}
               </SelectContent>
             </Select>
+            {!categoryId && (
+              <p className="flex items-start gap-1.5 rounded-lg bg-danger-wash px-2.5 py-2 text-xs text-danger">
+                <AlertTriangle className="mt-px size-3.5 shrink-0" />
+                Without a collection this product can&apos;t appear on your
+                website. Pick one to show it.
+              </p>
+            )}
           </div>
         </Card>
+
+        {features.wholesale && (
+          <Card className="space-y-4 p-5">
+            <div>
+              <Label>Wholesale price</Label>
+              <p className="mt-0.5 text-xs text-ink-soft">
+                Shoppers who buy at least the minimum quantity pay this price
+                per item.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="wholesale-price" className="text-xs">
+                  Price per item
+                </Label>
+                <Input
+                  id="wholesale-price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={wholesalePrice}
+                  onChange={(e) => setWholesalePrice(e.target.value)}
+                  placeholder="e.g. 12"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="wholesale-min" className="text-xs">
+                  From quantity
+                </Label>
+                <Input
+                  id="wholesale-min"
+                  type="number"
+                  min="2"
+                  step="1"
+                  value={wholesaleMinQty}
+                  onChange={(e) => setWholesaleMinQty(e.target.value)}
+                  placeholder="e.g. 10"
+                />
+              </div>
+            </div>
+            {errors.wholesale && (
+              <p className="text-xs text-danger">{errors.wholesale}</p>
+            )}
+          </Card>
+        )}
+
+        {features.aiSeo && (
+          <Card className="space-y-4 p-5">
+            <div>
+              <Label>Search engines (SEO)</Label>
+              <p className="mt-0.5 text-xs text-ink-soft">
+                How this product shows up on Google. Leave blank to use the
+                title and description.
+              </p>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="seo-title" className="text-xs">
+                SEO title ({seoTitle.length}/70)
+              </Label>
+              <Input
+                id="seo-title"
+                maxLength={70}
+                value={seoTitle}
+                onChange={(e) => setSeoTitle(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="seo-desc" className="text-xs">
+                Meta description ({seoDescription.length}/160)
+              </Label>
+              <Textarea
+                id="seo-desc"
+                rows={3}
+                maxLength={160}
+                value={seoDescription}
+                onChange={(e) => setSeoDescription(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2 border-t border-line pt-4">
+              <Label htmlFor="ai-notes" className="flex items-center gap-1.5">
+                <Sparkles className="size-3.5 text-green" />
+                Write with AI
+              </Label>
+              <Textarea
+                id="ai-notes"
+                rows={3}
+                value={aiNotes}
+                onChange={(e) => setAiNotes(e.target.value)}
+                placeholder="A few facts: material, size, what it's for, who it's for"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={writeWithAi}
+                disabled={writing || !features.aiReady}
+              >
+                {writing ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="size-3.5" />
+                )}
+                {writing
+                  ? "Writing…"
+                  : "Write description and SEO"}
+              </Button>
+              {!features.aiReady && (
+                <p className="text-xs text-ink-soft">
+                  AI writing isn&apos;t switched on for Shopleb yet.
+                </p>
+              )}
+            </div>
+          </Card>
+        )}
 
         <div className="flex gap-2.5">
           <Button className="flex-1" size="lg" onClick={save} disabled={saving}>

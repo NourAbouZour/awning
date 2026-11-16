@@ -4,6 +4,7 @@ import type { Store } from "@/lib/types";
 
 const fullInclude = {
   theme: true,
+  user: { select: { plan: true } },
   categories: { orderBy: { name: "asc" } },
   products: {
     include: { variants: true },
@@ -11,17 +12,29 @@ const fullInclude = {
   },
 } as const;
 
+/** What shoppers see: products without a collection are left out. */
+const publicInclude = {
+  ...fullInclude,
+  products: {
+    where: { categoryId: { not: null } },
+    include: { variants: true },
+    orderBy: { createdAt: "desc" },
+  },
+} as const;
+
+/** A store as the public storefront sees it. */
 export async function getStoreBySlug(slug: string): Promise<Store | null> {
   const row = await prisma.store.findUnique({
     where: { slug },
-    include: fullInclude,
+    include: publicInclude,
   });
   return row ? toStore(row) : null;
 }
 
-export async function getStoreForUser(userId: string): Promise<Store | null> {
+/** A store with every product, for its own dashboard. */
+export async function getStoreById(id: string): Promise<Store | null> {
   const row = await prisma.store.findUnique({
-    where: { userId },
+    where: { id },
     include: fullInclude,
   });
   return row ? toStore(row) : null;
@@ -49,8 +62,21 @@ export async function getStoreOwner(
 
 export async function listStores(): Promise<Store[]> {
   const rows = await prisma.store.findMany({
-    include: fullInclude,
+    include: publicInclude,
     orderBy: { createdAt: "asc" },
   });
   return rows.map(toStore);
+}
+
+/**
+ * Delete a store and everything that belongs to it: products, collections,
+ * orders, customers, messages, subscribers, discounts and staff accounts.
+ * The owner's own account is kept. This cannot be undone.
+ */
+export async function deleteStoreFully(storeId: string): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    // Orders hold a RESTRICT link to customers, so they go first.
+    await tx.order.deleteMany({ where: { storeId } });
+    await tx.store.delete({ where: { id: storeId } });
+  });
 }

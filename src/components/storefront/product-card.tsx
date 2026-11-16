@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { useCart } from "@/components/storefront/cart-context";
 import type { Product } from "@/lib/types";
 import { cn, formatMoney } from "@/lib/utils";
+import { cardPrice, isSoldOut } from "@/lib/product";
 
 /**
  * Storefront product card: second image on hover, sale/sold-out badges,
@@ -19,11 +20,13 @@ export function ProductCard({
   product: Product;
   priority?: boolean;
 }) {
-  const { store, add } = useCart();
+  const { store, add, remaining } = useCart();
   const base = `/s/${store.slug}`;
-  const soldOut = product.inventory === 0;
-  const onSale = !!product.compareAt;
+  const soldOut = isSoldOut(product);
+  const price = cardPrice(product);
+  const onSale = !!product.compareAt && product.compareAt > price;
   const hasVariants = !!product.variantGroup;
+  const canAdd = hasVariants || remaining(product.id) > 0;
 
   return (
     <div className="group relative">
@@ -74,6 +77,7 @@ export function ProductCard({
 
       {/* quick add */}
       {!soldOut &&
+        canAdd &&
         (hasVariants ? (
           <Link
             href={`${base}/product/${product.slug}`}
@@ -106,7 +110,7 @@ export function ProductCard({
             </span>
           )}
           <span className={cn("font-semibold", onSale && "text-sf-brand")}>
-            {formatMoney(product.price, store.currency)}
+            {formatMoney(price, store.currency)}
           </span>
         </p>
       </div>

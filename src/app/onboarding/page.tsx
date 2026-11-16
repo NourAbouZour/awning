@@ -133,6 +133,7 @@ export default function OnboardingPage() {
     const hasProduct = state.productTitle.trim().length > 0;
     const sampleTitles = ["Signature piece", "Everyday favorite", "The classic"];
     return {
+      plan: "stall",
       id: "preview",
       name,
       slug: state.slug || "your-store",
@@ -149,6 +150,7 @@ export default function OnboardingPage() {
         brandColor: state.brandColor,
         fontPairing: state.fontPairing,
         announcement: "Free shipping over $50",
+        showAnnouncement: true,
         heroImage: state.heroImage,
         heroHeadline: state.heroHeadline || "Made with care. Shipped with speed.",
         heroSub: state.heroSub,
@@ -228,6 +230,7 @@ export default function OnboardingPage() {
         productTitle: state.productTitle,
         productPrice: state.productPrice,
         productImage: state.productImage,
+        additional: new URLSearchParams(window.location.search).has("new"),
       });
       setPublishing(false);
       if (res.error) {
@@ -272,9 +275,6 @@ export default function OnboardingPage() {
         <span className="text-xs text-ink-soft md:hidden">
           Step {step + 1} of {STEPS.length}
         </span>
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/dashboard">Skip setup</Link>
-        </Button>
       </header>
 
       <div className="mx-auto grid w-full max-w-6xl flex-1 gap-10 px-5 py-10 md:px-8 lg:grid-cols-[1fr_1fr] lg:gap-16">
@@ -305,6 +305,9 @@ export default function OnboardingPage() {
                 <div className="space-y-1.5">
                   <Label htmlFor="store-slug">Your store address</Label>
                   <div className="flex items-center overflow-hidden rounded-lg border border-line-strong bg-paper focus-within:border-green focus-within:ring-2 focus-within:ring-green/15">
+                    <span className="flex h-10 items-center border-r border-line bg-canvas px-3 text-sm text-ink-soft">
+                      shopleb.com/s/
+                    </span>
                     <input
                       id="store-slug"
                       className="h-10 min-w-0 flex-1 bg-transparent px-3.5 text-sm outline-none"
@@ -316,9 +319,6 @@ export default function OnboardingPage() {
                         checkSlug(nextSlug);
                       }}
                     />
-                    <span className="border-l border-line bg-canvas px-3 text-sm text-ink-soft">
-                      .shopleb.shop
-                    </span>
                   </div>
                   <div className="min-h-5 text-xs" aria-live="polite">
                     {slugStatus === "checking" && (
@@ -330,7 +330,7 @@ export default function OnboardingPage() {
                     {slugStatus === "available" && (
                       <span className="flex items-center gap-1.5 text-ok">
                         <Check className="size-3" />
-                        {state.slug}.shopleb.shop is yours if you want it
+                        shopleb.com/s/{state.slug} is yours if you want it
                       </span>
                     )}
                     {slugStatus === "taken" && (
@@ -605,7 +605,7 @@ export default function OnboardingPage() {
               <p className="mt-3 max-w-md text-lg leading-relaxed text-ink-body">
                 It&apos;s live right now at{" "}
                 <span className="font-medium text-ink">
-                  {createdSlug ?? state.slug}.shopleb.shop
+                  shopleb.com/s/{createdSlug ?? state.slug}
                 </span>
                 . Share the link, or head to your dashboard to add the rest of
                 your products.
@@ -672,7 +672,7 @@ export default function OnboardingPage() {
               Live preview, updates as you choose
             </p>
             <BrowserFrame
-              url={`${state.slug || "your-store"}.shopleb.shop`}
+              url={`shopleb.com/s/${state.slug || "your-store"}`}
               className="transition-all duration-300"
             >
               <StorePreview store={previewStore} />

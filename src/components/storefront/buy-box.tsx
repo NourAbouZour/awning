@@ -11,26 +11,53 @@ import {
 import { useCart } from "@/components/storefront/cart-context";
 import type { Product } from "@/lib/types";
 import { cn, formatMoney } from "@/lib/utils";
+import { hasFeature } from "@/lib/plan";
+import { defaultVariant, isSoldOut } from "@/lib/product";
 
 export function BuyBox({ product }: { product: Product }) {
-  const { store, add } = useCart();
+  const { store, add, remaining } = useCart();
   const variants = product.variantGroup?.variants;
-  const [variantId, setVariantId] = React.useState<string | undefined>(
-    undefined
-  );
+  // Start on the variant whose price the shop card showed, if it's in stock.
+  const [variantId, setVariantId] = React.useState<string | undefined>(() => {
+    const d = defaultVariant(product);
+    return d && d.stock > 0 ? d.id : undefined;
+  });
   const [quantity, setQuantity] = React.useState(1);
   const [needsVariant, setNeedsVariant] = React.useState(false);
+  const [notice, setNotice] = React.useState("");
 
   const selected = variants?.find((v) => v.id === variantId);
   const price = selected?.price ?? product.price;
-  const soldOut = product.inventory === 0;
+  const soldOut = isSoldOut(product);
+  // Units still available for what's selected, after what's already in the bag.
+  const left =
+    variants && !variantId ? Infinity : remaining(product.id, variantId);
+  const maxQty = Number.isFinite(left) ? left : 99;
+  const wholesale =
+    hasFeature(store.plan, "wholesale") &&
+    product.wholesalePrice &&
+    product.wholesaleMinQty
+      ? { price: product.wholesalePrice, min: product.wholesaleMinQty }
+      : null;
+
+  // Keep the chosen amount inside what's in stock for the selection.
+  const qty = Math.max(1, Math.min(quantity, Math.max(1, maxQty)));
 
   function addToBag() {
+    setNotice("");
     if (variants && !variantId) {
       setNeedsVariant(true);
       return;
     }
-    add(product.id, variantId, quantity);
+    if (maxQty <= 0) {
+      setNotice("You already have all the stock we have in your bag.");
+      return;
+    }
+    const added = add(product.id, variantId, qty);
+    if (added < qty) {
+      setNotice(`Only ${added} more could be added, that's all we have.`);
+    }
+    setQuantity(1);
   }
 
   return (
@@ -93,7 +120,7 @@ export function BuyBox({ product }: { product: Product }) {
               );
             })}
           </div>
-          {selected && selected.stock <= 5 && (
+          {selected && selected.stock > 0 && selected.stock <= 5 && (
             <p className="mt-2.5 text-xs font-medium text-sf-brand">
               Only {selected.stock} left in {selected.name}
             </p>
@@ -105,7 +132,7 @@ export function BuyBox({ product }: { product: Product }) {
       <div className="mt-7 flex gap-3">
         <div className="flex items-center rounded-full border border-sf-line">
           <button
-            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+            onClick={() => setQuantity(Math.max(1, qty - 1))}
             aria-label="Decrease quantity"
             className="p-3.5 transition-opacity hover:opacity-60"
           >
@@ -115,12 +142,13 @@ export function BuyBox({ product }: { product: Product }) {
             className="w-8 text-center text-sm font-medium tabular-nums"
             aria-live="polite"
           >
-            {quantity}
+            {qty}
           </span>
           <button
-            onClick={() => setQuantity((q) => q + 1)}
+            onClick={() => setQuantity(Math.min(qty + 1, maxQty))}
+            disabled={qty >= maxQty}
             aria-label="Increase quantity"
-            className="p-3.5 transition-opacity hover:opacity-60"
+            className="p-3.5 transition-opacity hover:opacity-60 disabled:cursor-not-allowed disabled:opacity-30"
           >
             <Plus className="size-4" />
           </button>
@@ -134,6 +162,25 @@ export function BuyBox({ product }: { product: Product }) {
           {soldOut ? "Sold out" : "Add to bag"}
         </button>
       </div>
+      {!variants && !soldOut && product.inventory <= 5 && (
+        <p className="mt-2.5 text-xs font-medium text-sf-brand">
+          Only {product.inventory} left
+        </p>
+      )}
+      {notice && (
+        <p className="mt-2.5 text-xs font-medium text-sf-brand" role="status">
+          {notice}
+        </p>
+      )}
+      {wholesale && (
+        <p className="mt-3 rounded-xl bg-sf-wash px-4 py-3 text-sm">
+          Buying in bulk? Pay{" "}
+          <span className="font-semibold">
+            {formatMoney(wholesale.price, store.currency)}
+          </span>{" "}
+          each when you take {wholesale.min} or more.
+        </p>
+      )}
 
       {/* accordions */}
       <Accordion
@@ -147,13 +194,14 @@ export function BuyBox({ product }: { product: Product }) {
             {product.description}
           </AccordionContent>
         </AccordionItem>
-        <AccordionItem value="shipping" className="border-sf-line">
-          <AccordionTrigger>Shipping & returns</AccordionTrigger>
-          <AccordionContent className="leading-relaxed text-sf-muted">
-            {store.shippingNote} Orders placed before 2pm ship the same day
-            from {store.address.split(",").slice(-2).join(",").trim()}.
-          </AccordionContent>
-        </AccordionItem>
+        {store.shippingNote.trim() && (
+          <AccordionItem value="shipping" className="border-sf-line">
+            <AccordionTrigger>Shipping & returns</AccordionTrigger>
+            <AccordionContent className="leading-relaxed text-sf-muted">
+              {store.shippingNote}
+            </AccordionContent>
+          </AccordionItem>
+        )}
       </Accordion>
 
       {/* sticky mobile add-to-cart */}
@@ -166,7 +214,7 @@ export function BuyBox({ product }: { product: Product }) {
           <ShoppingBag className="size-4" />
           {soldOut
             ? "Sold out"
-            : `Add to bag · ${formatMoney(price * quantity, store.currency)}`}
+            : `Add to bag · ${formatMoney(price * qty, store.currency)}`}
         </button>
       </div>
       {/* spacer so the sticky bar never covers content */}

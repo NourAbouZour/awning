@@ -36,7 +36,11 @@ export async function login(
 
   await createSession(user.id);
   if (user.role === "superadmin") redirect("/admin");
-  const store = await prisma.store.findUnique({ where: { userId: user.id } });
+  if (user.role === "staff") redirect("/dashboard");
+  const store = await prisma.store.findFirst({
+    where: { userId: user.id },
+    select: { id: true },
+  });
   redirect(store ? "/dashboard" : "/onboarding");
 }
 
@@ -80,4 +84,111 @@ export async function signup(
 export async function logout(): Promise<void> {
   await destroySession();
   redirect("/login");
+}
+
+/* ------------------------------------------------------------------ */
+/* Forgot password                                                      */
+/* ------------------------------------------------------------------ */
+
+export interface ResetState {
+  error?: string;
+  /** The request reached the Shopleb team. */
+  sent?: boolean;
+  /** The password was changed. */
+  done?: boolean;
+}
+
+const MAX_CODE_ATTEMPTS = 5;
+const BAD_CODE =
+  "That code isn't right or has expired. Ask the Shopleb team for a new one.";
+
+/**
+ * Step 1: the user says they forgot their password. The request shows up for
+ * the platform owner in /admin, who generates a one-time code for them. The
+ * answer is the same whether or not the email has an account.
+ */
+export async function requestPasswordReset(
+  _prev: ResetState,
+  formData: FormData,
+): Promise<ResetState> {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!EMAIL_RE.test(email)) return { error: "Enter your email address." };
+
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true, role: true },
+  });
+  if (user && user.role !== "superadmin") {
+    // One open request per user is enough; refresh it instead of piling up.
+    const open = await prisma.passwordReset.findFirst({
+      where: { userId: user.id, usedAt: null },
+      orderBy: { createdAt: "desc" },
+      select: { id: true },
+    });
+    if (open) {
+      await prisma.passwordReset.update({
+        where: { id: open.id },
+        data: { createdAt: new Date() },
+      });
+    } else {
+      await prisma.passwordReset.create({ data: { userId: user.id } });
+    }
+  }
+  return { sent: true };
+}
+
+/**
+ * Step 2: the user types the one-time code they were given plus a new
+ * password. The code works once, for 5 minutes, and locks after 5 wrong tries.
+ */
+export async function resetPasswordWithCode(
+  _prev: ResetState,
+  formData: FormData,
+): Promise<ResetState> {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const code = String(formData.get("code") ?? "").replace(/\D/g, "");
+  const password = String(formData.get("password") ?? "");
+
+  if (!EMAIL_RE.test(email)) return { error: "Enter your email address." };
+  if (code.length !== 6) return { error: "Enter the 6-digit code." };
+  if (password.length < 8)
+    return { error: "Use a new password of at least 8 characters." };
+
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true, role: true },
+  });
+  if (!user || user.role === "superadmin") return { error: BAD_CODE };
+
+  const request = await prisma.passwordReset.findFirst({
+    where: { userId: user.id, usedAt: null, codeHash: { not: null } },
+    orderBy: { createdAt: "desc" },
+  });
+  if (
+    !request ||
+    !request.codeHash ||
+    !request.codeExpiresAt ||
+    request.codeExpiresAt.getTime() < Date.now() ||
+    request.attempts >= MAX_CODE_ATTEMPTS
+  ) {
+    return { error: BAD_CODE };
+  }
+
+  if (!(await verifyPassword(code, request.codeHash))) {
+    await prisma.passwordReset.update({
+      where: { id: request.id },
+      data: { attempts: { increment: 1 } },
+    });
+    return { error: BAD_CODE };
+  }
+
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash: await hashPassword(password) },
+    }),
+    // The code is spent, and any other open requests are closed with it.
+    prisma.passwordReset.deleteMany({ where: { userId: user.id } }),
+  ]);
+  return { done: true };
 }

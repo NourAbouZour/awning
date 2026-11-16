@@ -6,6 +6,7 @@ import { BuyBox } from "@/components/storefront/buy-box";
 import { ProductCard } from "@/components/storefront/product-card";
 import { ProductGallery } from "@/components/storefront/product-gallery";
 import { getStoreBySlug } from "@/server/stores";
+import { hasFeature } from "@/lib/plan";
 
 type Params = Promise<{ store: string; slug: string }>;
 
@@ -18,13 +19,21 @@ export async function generateMetadata({
   const store = await getStoreBySlug(storeSlug);
   const product = store?.products.find((p) => p.slug === slug);
   if (!store || !product) return {};
+  const seo = hasFeature(store.plan, "aiSeo");
+  const description =
+    (seo && product.seoDescription) || product.description.slice(0, 155);
   return {
-    title: product.title,
-    description: product.description.slice(0, 155),
+    // An SEO title is written in full, so it skips the "· Store" suffix.
+    title:
+      seo && product.seoTitle ? { absolute: product.seoTitle } : product.title,
+    description,
     openGraph: {
-      title: `${product.title} · ${store.name}`,
-      description: product.description.slice(0, 155),
-      images: [{ url: product.images[0] }],
+      title:
+        seo && product.seoTitle
+          ? product.seoTitle
+          : `${product.title} · ${store.name}`,
+      description,
+      images: product.images[0] ? [{ url: product.images[0] }] : [],
     },
   };
 }

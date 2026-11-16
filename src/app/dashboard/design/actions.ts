@@ -3,15 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { requireCurrentStore } from "@/lib/auth";
+import { requireCurrentStore, currentHasFeature } from "@/lib/auth";
 import type { HomeSection } from "@/lib/types";
 
 export interface DesignInput {
   logoUrl?: string | null;
+  hideBranding?: boolean;
   theme: {
     brandColor: string;
     fontPairing: string;
     announcement: string;
+    showAnnouncement: boolean;
     heroImage: string;
     heroHeadline: string;
     heroSub: string;
@@ -34,11 +36,14 @@ export async function saveDesign(input: DesignInput): Promise<{ error?: string }
 
   const logoUrl =
     input.logoUrl && !input.logoUrl.startsWith("blob:") ? input.logoUrl : null;
+  // Only Arcade stores may hide the Shopleb credit.
+  const hideBranding =
+    !!input.hideBranding && (await currentHasFeature("removeBranding"));
 
   await prisma.$transaction([
     prisma.store.update({
       where: { id: store.id },
-      data: { logoUrl },
+      data: { logoUrl, hideBranding },
     }),
     prisma.storeTheme.update({
       where: { storeId: store.id },
@@ -46,6 +51,7 @@ export async function saveDesign(input: DesignInput): Promise<{ error?: string }
         brandColor: t.brandColor,
         fontPairing: t.fontPairing,
         announcement: t.announcement,
+        showAnnouncement: t.showAnnouncement !== false,
         heroImage: t.heroImage.startsWith("blob:") ? "" : t.heroImage,
         heroHeadline: t.heroHeadline,
         heroSub: t.heroSub,

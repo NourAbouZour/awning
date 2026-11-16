@@ -98,25 +98,11 @@ export async function deleteCategory(
   });
   if (!cat) return { error: "Collection not found." };
 
-  if (cat._count.products > 0) {
-    // Products require a category (FK is Restrict); move them to another one.
-    const fallback = await prisma.category.findFirst({
-      where: { storeId: store.id, NOT: { id } },
-      select: { id: true },
-    });
-    if (!fallback) {
-      return {
-        error:
-          "This is your only collection, create another before deleting it.",
-      };
-    }
-    await prisma.product.updateMany({
-      where: { categoryId: id },
-      data: { categoryId: fallback.id },
-    });
-  }
-
+  // Its products are left without a collection (the FK is SET NULL). They are
+  // hidden from the storefront and flagged in red on the Products page until
+  // the owner picks a new collection.
   await prisma.category.delete({ where: { id } });
+  revalidatePath("/dashboard/products");
   revalidatePath("/dashboard/categories");
   revalidatePath(`/s/${store.slug}`);
   return {};

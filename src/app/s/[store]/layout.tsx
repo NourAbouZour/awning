@@ -73,9 +73,11 @@ export default async function StorefrontLayout({
     >
       <CartProvider store={store}>
         {isOwner && <OwnerBar />}
-        <p className="bg-sf-brand px-4 py-2 text-center text-[13px] font-medium text-sf-on-brand">
-          {store.theme.announcement}
-        </p>
+        {store.theme.showAnnouncement && store.theme.announcement.trim() && (
+          <p className="bg-sf-brand px-4 py-2 text-center text-[13px] font-medium text-sf-on-brand">
+            {store.theme.announcement}
+          </p>
+        )}
         <StoreHeader />
         <main className="flex-1">{children}</main>
         <StoreFooter store={store} />

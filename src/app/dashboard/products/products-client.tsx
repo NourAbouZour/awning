@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
+  AlertTriangle,
   Archive,
   CheckCircle2,
   MoreHorizontal,
@@ -77,7 +78,9 @@ export function ProductsClient({
 
   const filtered = products.filter((p) => {
     if (status !== "all" && p.status !== status) return false;
-    if (category !== "all" && p.categoryId !== category) return false;
+    if (category === "none" && p.categoryId) return false;
+    if (category !== "all" && category !== "none" && p.categoryId !== category)
+      return false;
     if (query && !p.title.toLowerCase().includes(query.toLowerCase()))
       return false;
     return true;
@@ -140,7 +143,11 @@ export function ProductsClient({
   }
 
   const categoryName = (id: string) =>
-    categories.find((c) => c.id === id)?.name ?? "-";
+    categories.find((c) => c.id === id)?.name ?? "";
+  // Products without a collection are hidden from the storefront.
+  const uncategorized = products.filter(
+    (p) => !p.categoryId || !categoryName(p.categoryId),
+  ).length;
 
   return (
     <>
@@ -150,7 +157,7 @@ export function ProductsClient({
         actions={
           atLimit ? (
             <Button size="sm" variant="outline" asChild>
-              <Link href="/pricing">Upgrade to add more</Link>
+              <Link href="/dashboard/settings">Upgrade to add more</Link>
             </Button>
           ) : (
             <Button size="sm" asChild>
@@ -162,6 +169,33 @@ export function ProductsClient({
           )
         }
       />
+
+      {uncategorized > 0 && (
+        <div
+          role="alert"
+          className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-danger/30 bg-danger-wash px-4 py-3 text-sm text-danger"
+        >
+          <p className="flex items-start gap-2">
+            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+            <span>
+              <b>
+                {uncategorized} {uncategorized === 1 ? "product has" : "products have"}{" "}
+                no collection.
+              </b>{" "}
+              A product can&apos;t be on your website without a collection.
+              Edit {uncategorized === 1 ? "it" : "them"} and pick one.
+            </span>
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            className="border-danger/40 text-danger hover:bg-danger/10"
+            onClick={() => setCategory("none")}
+          >
+            Show {uncategorized === 1 ? "it" : "them"}
+          </Button>
+        </div>
+      )}
 
       <Card>
         <div className="flex flex-wrap items-center gap-3 border-b border-line p-4">
@@ -191,6 +225,7 @@ export function ProductsClient({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All collections</SelectItem>
+              <SelectItem value="none">No collection</SelectItem>
               {categories.map((c) => (
                 <SelectItem key={c.id} value={c.id}>
                   {c.name}
@@ -279,10 +314,17 @@ export function ProductsClient({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((p) => (
+              {filtered.map((p) => {
+                const noCollection = !categoryName(p.categoryId);
+                return (
                 <TableRow
                   key={p.id}
                   data-state={selected.has(p.id) ? "selected" : undefined}
+                  className={
+                    noCollection
+                      ? "bg-danger-wash/70 hover:bg-danger-wash"
+                      : undefined
+                  }
                 >
                   <TableCell>
                     <Checkbox
@@ -312,11 +354,26 @@ export function ProductsClient({
                         <span className="block text-xs text-ink-soft">
                           {p.sku}
                         </span>
+                        {noCollection && (
+                          <span className="mt-0.5 flex items-center gap-1 text-xs font-medium text-danger md:hidden">
+                            <AlertTriangle className="size-3" />
+                            No collection, not on your website
+                          </span>
+                        )}
                       </span>
                     </Link>
                   </TableCell>
-                  <TableCell className="hidden text-ink-soft md:table-cell">
-                    {categoryName(p.categoryId)}
+                  <TableCell className="hidden md:table-cell">
+                    {noCollection ? (
+                      <span className="flex items-center gap-1.5 text-[13px] font-medium text-danger">
+                        <AlertTriangle className="size-3.5 shrink-0" />
+                        None, hidden from website
+                      </span>
+                    ) : (
+                      <span className="text-ink-soft">
+                        {categoryName(p.categoryId)}
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
                     {p.inventory === 0 ? (
@@ -384,7 +441,8 @@ export function ProductsClient({
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>
-              ))}
+                );
+              })}
             </TableBody>
           </Table>
         )}

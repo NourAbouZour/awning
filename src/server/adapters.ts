@@ -32,6 +32,7 @@ interface VariantRow {
   name: string;
   price: DecimalLike | null;
   stock: number;
+  isDefault?: boolean;
 }
 
 interface ProductRow {
@@ -42,13 +43,17 @@ interface ProductRow {
   details: string;
   price: DecimalLike;
   compareAt: DecimalLike | null;
-  categoryId: string;
+  categoryId: string | null;
   images: unknown;
   inventory: number;
   sku: string;
   status: "active" | "draft";
   featured: boolean;
   variantGroupLabel: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  wholesalePrice?: DecimalLike | null;
+  wholesaleMinQty?: number | null;
   createdAt: Date;
   variants?: VariantRow[];
 }
@@ -60,6 +65,7 @@ function toVariant(v: VariantRow): ProductVariant {
     name: v.name,
     ...(price !== undefined ? { price } : {}),
     stock: v.stock,
+    ...(v.isDefault ? { isDefault: true } : {}),
   };
 }
 
@@ -76,7 +82,13 @@ export function toProduct(row: ProductRow): Product {
     price: req(row.price),
     ...(compareAt !== undefined ? { compareAt } : {}),
     images: Array.isArray(row.images) ? (row.images as string[]) : [],
-    categoryId: row.categoryId,
+    categoryId: row.categoryId ?? "",
+    ...(row.seoTitle ? { seoTitle: row.seoTitle } : {}),
+    ...(row.seoDescription ? { seoDescription: row.seoDescription } : {}),
+    ...(decToNum(row.wholesalePrice) !== undefined
+      ? { wholesalePrice: decToNum(row.wholesalePrice) }
+      : {}),
+    ...(row.wholesaleMinQty ? { wholesaleMinQty: row.wholesaleMinQty } : {}),
     ...(hasGroup
       ? {
           variantGroup: {
@@ -107,10 +119,40 @@ export function toCategory(row: CategoryRow): Category {
   return { id: row.id, name: row.name, slug: row.slug, image: row.image };
 }
 
+/** Every home section, in its default order, for themes saved before a section existed. */
+const ALL_SECTIONS: HomeSection["id"][] = [
+  "hero",
+  "collections",
+  "carousel",
+  "story",
+  "trust",
+  "map",
+  "newsletter",
+];
+
+/** Append any section a saved theme doesn't know about yet (new ones start on). */
+export function withAllSections(saved: HomeSection[]): HomeSection[] {
+  const known = new Set(saved.map((s) => s.id));
+  const missing = ALL_SECTIONS.filter((id) => !known.has(id)).map((id) => ({
+    id,
+    enabled: true,
+  }));
+  if (!missing.length) return saved;
+  // Put the map just before the newsletter when it's the one missing.
+  const out = [...saved];
+  for (const m of missing) {
+    const nl = out.findIndex((s) => s.id === "newsletter");
+    if (m.id === "map" && nl >= 0) out.splice(nl, 0, m);
+    else out.push(m);
+  }
+  return out;
+}
+
 interface ThemeRow {
   brandColor: string;
   fontPairing: string;
   announcement: string;
+  showAnnouncement?: boolean;
   heroImage: string;
   heroHeadline: string;
   heroSub: string;
@@ -137,6 +179,7 @@ export function toTheme(row: ThemeRow): StoreTheme {
     brandColor: row.brandColor,
     fontPairing: row.fontPairing as FontPairingId,
     announcement: row.announcement,
+    showAnnouncement: row.showAnnouncement ?? true,
     heroImage: row.heroImage,
     heroHeadline: row.heroHeadline,
     heroSub: row.heroSub,
@@ -150,7 +193,9 @@ export function toTheme(row: ThemeRow): StoreTheme {
       row.newsletterBody ??
       "Join the list for new releases and restocks. One or two emails a month, never more.",
     footerText: row.footerText,
-    sections: Array.isArray(row.sections) ? (row.sections as HomeSection[]) : [],
+    sections: withAllSections(
+      Array.isArray(row.sections) ? (row.sections as HomeSection[]) : [],
+    ),
     socials,
   };
 }
@@ -168,11 +213,14 @@ interface StoreRow {
   city?: string | null;
   district?: string | null;
   mapsUrl?: string | null;
+  mapsEmbed?: string | null;
   hours: string;
   currency: string;
   shippingNote: string;
   freeShipping?: DecimalLike | null;
   signupDiscountCode?: string | null;
+  hideBranding?: boolean;
+  user?: { plan: "stall" | "shopfront" | "arcade" } | null;
   theme: ThemeRow | null;
   categories: CategoryRow[];
   products: ProductRow[];
@@ -192,6 +240,7 @@ export function toStore(row: StoreRow): Store {
     ...(row.city ? { city: row.city } : {}),
     ...(row.district ? { district: row.district } : {}),
     ...(row.mapsUrl ? { mapsUrl: row.mapsUrl } : {}),
+    ...(row.mapsEmbed ? { mapsEmbed: row.mapsEmbed } : {}),
     hours: row.hours,
     currency: row.currency,
     shippingNote: row.shippingNote,
@@ -201,6 +250,8 @@ export function toStore(row: StoreRow): Store {
     ...(row.signupDiscountCode
       ? { signupDiscountCode: row.signupDiscountCode }
       : {}),
+    ...(row.hideBranding ? { hideBranding: true } : {}),
+    plan: row.user?.plan ?? "stall",
     theme: row.theme
       ? toTheme(row.theme)
       : ({} as StoreTheme),
@@ -235,6 +286,12 @@ interface OrderRow {
   customerId: string;
   customerName: string;
   customerEmail: string;
+  customerPhone?: string;
+  locationUrl?: string | null;
+  paymentMethod?: string;
+  discountCode?: string | null;
+  discountAmount?: DecimalLike | null;
+  shippingFee?: DecimalLike | null;
   total: DecimalLike;
   status: Order["status"];
   shippingAddress: string;
@@ -249,6 +306,16 @@ export function toOrder(row: OrderRow): Order {
     customerId: row.customerId,
     customerName: row.customerName,
     customerEmail: row.customerEmail,
+    customerPhone: row.customerPhone ?? "",
+    ...(row.locationUrl ? { locationUrl: row.locationUrl } : {}),
+    paymentMethod: row.paymentMethod ?? "cash",
+    ...(row.discountCode ? { discountCode: row.discountCode } : {}),
+    ...(decToNum(row.discountAmount) !== undefined
+      ? { discountAmount: decToNum(row.discountAmount) }
+      : {}),
+    ...(decToNum(row.shippingFee) !== undefined
+      ? { shippingFee: decToNum(row.shippingFee) }
+      : {}),
     items: row.items.map(toOrderItem),
     total: req(row.total),
     status: row.status,
@@ -263,7 +330,8 @@ export function toOrder(row: OrderRow): Order {
 interface CustomerRow {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
+  phone?: string;
   location: string;
   firstOrderAt: Date;
 }
@@ -276,7 +344,8 @@ export function toCustomer(
   return {
     id: row.id,
     name: row.name,
-    email: row.email,
+    email: row.email ?? "",
+    phone: row.phone ?? "",
     location: row.location,
     ordersCount,
     totalSpent,

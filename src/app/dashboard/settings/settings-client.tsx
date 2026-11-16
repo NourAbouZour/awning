@@ -2,7 +2,15 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Card, PageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +25,11 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
-import { saveSettings, setOwnPlan } from "@/app/dashboard/settings/actions";
+import {
+  deleteOwnStore,
+  saveSettings,
+  setOwnPlan,
+} from "@/app/dashboard/settings/actions";
 import { PLAN_LABELS, type Plan } from "@/lib/plan";
 import type { DayHours, Store } from "@/lib/types";
 import { slugify } from "@/lib/utils";
@@ -33,14 +45,26 @@ const CURRENCIES: [string, string][] = [
   ["AUD", "Australian Dollar (A$)"],
 ];
 
+const PLAN_SUMMARY: Record<Plan, string> = {
+  stall: "Free plan, up to 5 products.",
+  shopfront:
+    "Unlimited products, discount codes, email marketing, abandoned carts, upsells and a custom domain.",
+  arcade:
+    "Everything in Shopfront, plus several stores, staff accounts, analytics, wholesale prices, AI descriptions and SEO, no Shopleb branding, and an API.",
+};
+
 export function SettingsClient({
   store,
   plan,
+  requestedPlan,
   billingPaid,
+  isOwner,
 }: {
   store: Store;
   plan: Plan;
+  requestedPlan: Plan | null;
   billingPaid: boolean;
+  isOwner: boolean;
 }) {
   const router = useRouter();
   const [name, setName] = React.useState(store.name);
@@ -51,6 +75,7 @@ export function SettingsClient({
   const [city, setCity] = React.useState(store.city ?? "");
   const [district, setDistrict] = React.useState(store.district ?? "");
   const [mapsUrl, setMapsUrl] = React.useState(store.mapsUrl ?? "");
+  const [mapsEmbed, setMapsEmbed] = React.useState(store.mapsEmbed ?? "");
   const [hours, setHours] = React.useState<DayHours[]>(
     () => parseHours(store.hours) ?? defaultHours(),
   );
@@ -59,7 +84,27 @@ export function SettingsClient({
   const [freeShipping, setFreeShipping] = React.useState(
     store.freeShipping != null ? String(store.freeShipping) : "",
   );
+  const [freeShippingOn, setFreeShippingOn] = React.useState(
+    store.freeShipping != null && store.freeShipping > 0,
+  );
   const [saving, setSaving] = React.useState(false);
+  const [deleteOpen, setDeleteOpen] = React.useState(false);
+  const [confirmName, setConfirmName] = React.useState("");
+  const [deleting, setDeleting] = React.useState(false);
+  const nameMatches =
+    confirmName.trim().toLowerCase() === store.name.trim().toLowerCase();
+
+  function deleteStore() {
+    setDeleting(true);
+    React.startTransition(async () => {
+      // On success the action redirects and never returns.
+      const res = await deleteOwnStore(confirmName);
+      if (res?.error) {
+        setDeleting(false);
+        toast.error(res.error);
+      }
+    });
+  }
 
   function patchDay(i: number, p: Partial<DayHours>) {
     setHours((h) => h.map((d, idx) => (idx === i ? { ...d, ...p } : d)));
@@ -81,10 +126,11 @@ export function SettingsClient({
         city,
         district,
         mapsUrl,
+        mapsEmbed,
         hours: JSON.stringify(hours),
         currency,
         shippingNote,
-        freeShipping,
+        freeShipping: freeShippingOn ? freeShipping : "",
       });
       setSaving(false);
       if (res.error) toast.error(res.error);
@@ -93,12 +139,18 @@ export function SettingsClient({
   }
 
   function changePlan(next: Plan) {
-    if (next === plan) return;
+    if (next === (requestedPlan ?? plan)) return;
     React.startTransition(async () => {
       const res = await setOwnPlan(next);
       if (res.error) toast.error(res.error);
       else {
-        toast.success(`Switched to the ${PLAN_LABELS[next]} plan`);
+        toast.success(
+          res.pending
+            ? `Request sent. We'll be in touch to switch on ${PLAN_LABELS[next]}.`
+            : next === plan
+              ? "Plan request withdrawn"
+              : `Switched to the ${PLAN_LABELS[next]} plan`,
+        );
         router.refresh();
       }
     });
@@ -110,7 +162,7 @@ export function SettingsClient({
     <>
       <PageHeader
         title="Settings"
-        sub="Store details, shipping, and payouts."
+        sub="Your plan, store details, contact and shipping."
         actions={
           <Button size="sm" onClick={save} disabled={saving}>
             {saving && <Loader2 className="size-4 animate-spin" />}
@@ -124,13 +176,15 @@ export function SettingsClient({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-sm font-semibold text-ink">Plan</h2>
-              <p className="mt-0.5 text-xs text-ink-soft">
-                {plan === "stall"
-                  ? "Free plan, up to 5 products."
-                  : "Unlimited products."}
+              <p className="mt-0.5 max-w-md text-xs text-ink-soft">
+                You&apos;re on {PLAN_LABELS[plan]}. {PLAN_SUMMARY[plan]}
               </p>
             </div>
-            <Select value={plan} onValueChange={(v) => changePlan(v as Plan)}>
+            <Select
+              value={requestedPlan ?? plan}
+              onValueChange={(v) => changePlan(v as Plan)}
+              disabled={!isOwner}
+            >
               <SelectTrigger className="h-9 w-40" aria-label="Your plan">
                 <SelectValue />
               </SelectTrigger>
@@ -143,10 +197,33 @@ export function SettingsClient({
               </SelectContent>
             </Select>
           </div>
-          {plan !== "stall" && !billingPaid && (
+          {requestedPlan && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-warn-wash px-3 py-2 text-xs text-warn">
+              <p>
+                You asked for <b>{PLAN_LABELS[requestedPlan]}</b>. We&apos;ll
+                contact you to arrange payment by Whish or cash, then switch it
+                on. Your store keeps running on {PLAN_LABELS[plan]} meanwhile.
+              </p>
+              {isOwner && (
+                <button
+                  type="button"
+                  onClick={() => changePlan(plan)}
+                  className="font-semibold underline underline-offset-4"
+                >
+                  Cancel request
+                </button>
+              )}
+            </div>
+          )}
+          {!requestedPlan && plan !== "stall" && !billingPaid && (
             <p className="rounded-lg bg-warn-wash px-3 py-2 text-xs text-warn">
               Payment pending, we&apos;ll be in touch to arrange it. Your store
               stays live meanwhile.
+            </p>
+          )}
+          {!isOwner && (
+            <p className="text-xs text-ink-soft">
+              Only the store owner can change the plan.
             </p>
           )}
         </Card>
@@ -165,15 +242,15 @@ export function SettingsClient({
             <div className="space-y-1.5">
               <Label htmlFor="slug">Store address</Label>
               <div className="flex items-center overflow-hidden rounded-lg border border-line-strong bg-paper focus-within:border-green focus-within:ring-2 focus-within:ring-green/15">
+                <span className="flex h-10 items-center border-r border-line bg-canvas px-3 text-sm text-ink-soft">
+                  shopleb.com/s/
+                </span>
                 <input
                   id="slug"
                   className="h-10 min-w-0 flex-1 bg-transparent px-3.5 text-sm outline-none"
                   value={slug}
                   onChange={(e) => setSlug(slugify(e.target.value))}
                 />
-                <span className="border-l border-line bg-canvas px-3 text-sm text-ink-soft">
-                  .shopleb.shop
-                </span>
               </div>
               <p className="text-xs text-ink-soft">
                 Changing this breaks old links, your previous address stops
@@ -295,6 +372,23 @@ export function SettingsClient({
               district, and street automatically.
             </p>
           </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="maps-embed">Google Maps embed code (optional)</Label>
+            <Textarea
+              id="maps-embed"
+              rows={3}
+              className="min-h-0 font-mono text-xs"
+              value={mapsEmbed}
+              onChange={(e) => setMapsEmbed(e.target.value)}
+              placeholder='<iframe src="https://www.google.com/maps/embed?pb=..."></iframe>'
+            />
+            <p className="text-xs text-ink-soft">
+              In Google Maps open your place, press Share, choose &quot;Embed a
+              map&quot; and copy the HTML here. Your storefront then shows the
+              map with a Get directions button. You can switch the map section
+              on or off in Store design.
+            </p>
+          </div>
 
           {/* Opening hours, day + time, not free text */}
           <div className="space-y-2">
@@ -343,7 +437,22 @@ export function SettingsClient({
         <Card className="space-y-5 p-5">
           <h2 className="text-sm font-semibold text-ink">Shipping</h2>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-line px-3 py-2.5 sm:col-span-2">
+              <div>
+                <Label htmlFor="free-shipping-on">Offer free shipping</Label>
+                <p className="mt-0.5 text-xs text-ink-soft">
+                  {freeShippingOn
+                    ? "Shown on your storefront and in the shopper's bag."
+                    : "Off. Shoppers see no free shipping offer."}
+                </p>
+              </div>
+              <Switch
+                id="free-shipping-on"
+                checked={freeShippingOn}
+                onCheckedChange={setFreeShippingOn}
+              />
+            </div>
+            <div className={freeShippingOn ? "space-y-1.5" : "hidden"}>
               <Label htmlFor="free-shipping">Free shipping over</Label>
               <div className="flex items-center overflow-hidden rounded-lg border border-line-strong bg-paper focus-within:border-green focus-within:ring-2 focus-within:ring-green/15">
                 <span className="border-r border-line bg-canvas px-3 text-sm text-ink-soft">
@@ -361,7 +470,9 @@ export function SettingsClient({
                 />
               </div>
               <p className="text-xs text-ink-soft">
-                Orders at or above this amount ship free. Leave blank for none.
+                Orders at or above this amount ship free. To change the strip
+                at the top of your store, edit the announcement bar in Store
+                design.
               </p>
             </div>
           </div>
@@ -373,14 +484,85 @@ export function SettingsClient({
               className="min-h-0"
               value={shippingNote}
               onChange={(e) => setShippingNote(e.target.value)}
-              placeholder="e.g. Flat $8 shipping. Free over $75."
+              placeholder="e.g. Delivery all over Lebanon in 2 to 4 days."
             />
             <p className="text-xs text-ink-soft">
               Shown to shoppers on product pages and at checkout.
             </p>
           </div>
         </Card>
+
+        {isOwner && (
+          <Card className="border-danger/30 p-5">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="max-w-md">
+                <h2 className="text-sm font-semibold text-danger">
+                  Delete this store
+                </h2>
+                <p className="mt-0.5 text-xs text-ink-soft">
+                  Removes the storefront at shopleb.com/s/{store.slug} and
+                  everything in it: products, collections, orders, customers,
+                  messages and subscribers. This can&apos;t be undone. Your
+                  account stays, so you can open a new store later.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-danger/40 text-danger hover:bg-danger-wash"
+                onClick={() => {
+                  setConfirmName("");
+                  setDeleteOpen(true);
+                }}
+              >
+                <Trash2 className="size-3.5" />
+                Delete store
+              </Button>
+            </div>
+          </Card>
+        )}
       </div>
+
+      <Dialog open={deleteOpen} onOpenChange={(v) => !deleting && setDeleteOpen(v)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete {store.name} for good?</DialogTitle>
+            <DialogDescription>
+              Your storefront goes offline straight away and all of its
+              products, orders, customers and subscribers are deleted. There is
+              no way to get them back.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1.5">
+            <Label htmlFor="confirm-delete">
+              Type <b>{store.name}</b> to confirm
+            </Label>
+            <Input
+              id="confirm-delete"
+              value={confirmName}
+              onChange={(e) => setConfirmName(e.target.value)}
+              autoComplete="off"
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteOpen(false)}
+              disabled={deleting}
+            >
+              Keep my store
+            </Button>
+            <Button
+              className="bg-danger text-white hover:bg-danger/90"
+              onClick={deleteStore}
+              disabled={!nameMatches || deleting}
+            >
+              {deleting && <Loader2 className="size-4 animate-spin" />}
+              {deleting ? "Deleting…" : "Delete store forever"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

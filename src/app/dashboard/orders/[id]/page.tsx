@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Mail, MapPin } from "lucide-react";
+import { ArrowLeft, Mail, MapPin, Navigation, Phone } from "lucide-react";
 import { Card, PageHeader } from "@/components/dashboard/page-header";
 import { OrderStatusControl } from "@/components/dashboard/order-status-control";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { requireCurrentStore } from "@/lib/auth";
 import { getOrderById } from "@/server/orders";
 import { listCustomers } from "@/server/customers";
 import { formatDateTime, formatMoney } from "@/lib/utils";
+import { normalizePhone } from "@/lib/product";
 
 export default async function OrderDetailPage({
   params,
@@ -71,10 +72,10 @@ export default async function OrderDetailPage({
                   )}
                 </div>
                 <p className="text-sm text-ink-soft">
-                  {formatMoney(it.price)} × {it.quantity}
+                  {formatMoney(it.price, store.currency)} × {it.quantity}
                 </p>
                 <p className="w-20 text-right text-sm font-medium text-ink">
-                  {formatMoney(it.price * it.quantity)}
+                  {formatMoney(it.price * it.quantity, store.currency)}
                 </p>
               </div>
             ))}
@@ -82,15 +83,17 @@ export default async function OrderDetailPage({
           <div className="space-y-2 border-t border-line p-4 text-sm">
             <div className="flex justify-between text-ink-soft">
               <span>Subtotal</span>
-              <span>{formatMoney(itemsTotal)}</span>
+              <span>{formatMoney(itemsTotal, store.currency)}</span>
             </div>
-            <div className="flex justify-between text-ink-soft">
-              <span>Shipping</span>
-              <span>{itemsTotal >= 75 ? "Free" : formatMoney(8)}</span>
-            </div>
+            {order.discountAmount ? (
+              <div className="flex justify-between text-ink-soft">
+                <span>Discount {order.discountCode ? `(${order.discountCode})` : ""}</span>
+                <span>−{formatMoney(order.discountAmount, store.currency)}</span>
+              </div>
+            ) : null}
             <div className="flex justify-between border-t border-line pt-2 text-[15px] font-semibold text-ink">
               <span>Total</span>
-              <span>{formatMoney(order.total)}</span>
+              <span>{formatMoney(order.total, store.currency)}</span>
             </div>
           </div>
         </Card>
@@ -106,23 +109,54 @@ export default async function OrderDetailPage({
               <p className="text-xs text-ink-soft">
                 {customer.ordersCount}{" "}
                 {customer.ordersCount === 1 ? "order" : "orders"} ·{" "}
-                {formatMoney(customer.totalSpent)} lifetime
+                {formatMoney(customer.totalSpent, store.currency)} lifetime
               </p>
             )}
             <div className="mt-4 space-y-2.5 text-sm text-ink-body">
-              <p className="flex items-center gap-2.5">
-                <Mail className="size-3.5 shrink-0 text-ink-soft" />
-                <a
-                  href={`mailto:${order.customerEmail}`}
-                  className="truncate hover:underline"
-                >
-                  {order.customerEmail}
-                </a>
-              </p>
+              {order.customerPhone && (
+                <p className="flex items-center gap-2.5">
+                  <Phone className="size-3.5 shrink-0 text-ink-soft" />
+                  <a href={`tel:${order.customerPhone}`} className="hover:underline">
+                    {order.customerPhone}
+                  </a>
+                  <a
+                    href={`https://wa.me/${normalizePhone(order.customerPhone)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs font-medium text-green hover:underline"
+                  >
+                    WhatsApp
+                  </a>
+                </p>
+              )}
+              {order.customerEmail && (
+                <p className="flex items-center gap-2.5">
+                  <Mail className="size-3.5 shrink-0 text-ink-soft" />
+                  <a
+                    href={`mailto:${order.customerEmail}`}
+                    className="truncate hover:underline"
+                  >
+                    {order.customerEmail}
+                  </a>
+                </p>
+              )}
               <p className="flex items-start gap-2.5">
                 <MapPin className="mt-0.5 size-3.5 shrink-0 text-ink-soft" />
                 {order.shippingAddress}
               </p>
+              {order.locationUrl && (
+                <p className="flex items-center gap-2.5">
+                  <Navigation className="size-3.5 shrink-0 text-ink-soft" />
+                  <a
+                    href={order.locationUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium text-green hover:underline"
+                  >
+                    Open customer&apos;s location in Google Maps
+                  </a>
+                </p>
+              )}
             </div>
             {customer && (
               <Button
@@ -139,10 +173,16 @@ export default async function OrderDetailPage({
           <Card className="p-5">
             <h2 className="text-sm font-semibold text-ink">Payment</h2>
             <p className="mt-2 text-sm text-ink-body">
-              Paid by card via Stripe
+              {order.paymentMethod === "whish" ? "Whish" : "Cash on delivery"}
             </p>
             <p className="text-xs text-ink-soft">
-              Payout lands in your connected account in 2 business days.
+              {order.status === "pending"
+                ? order.paymentMethod === "whish"
+                  ? "Not paid yet. Send the customer your Whish details, then mark the order as paid."
+                  : "Not paid yet. Mark the order as paid once you collect the cash."
+                : order.status === "cancelled"
+                  ? "This order was cancelled."
+                  : "Marked as paid."}
             </p>
           </Card>
         </div>

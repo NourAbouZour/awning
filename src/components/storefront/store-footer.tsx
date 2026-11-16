@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { NewsletterForm } from "@/components/storefront/newsletter-form";
+import { hasFeature } from "@/lib/plan";
 import type { Store } from "@/lib/types";
 
 /* lucide no longer ships brand glyphs, tiny inline marks instead. */
@@ -40,6 +41,9 @@ function TikTokIcon({ className }: { className?: string }) {
 export function StoreFooter({ store }: { store: Store }) {
   const base = `/s/${store.slug}`;
   const s = store.theme.socials;
+  const showBranding = !(
+    store.hideBranding && hasFeature(store.plan, "removeBranding")
+  );
 
   return (
     <footer className="border-t border-sf-line bg-sf-bg">
@@ -115,6 +119,14 @@ export function StoreFooter({ store }: { store: Store }) {
               ))}
               <li>
                 <Link
+                  href={`${base}/track`}
+                  className="transition-colors hover:text-sf-ink"
+                >
+                  Track my order
+                </Link>
+              </li>
+              <li>
+                <Link
                   href={`${base}/contact`}
                   className="transition-colors hover:text-sf-ink"
                 >
@@ -137,12 +149,36 @@ export function StoreFooter({ store }: { store: Store }) {
 
         <div className="mt-12 flex flex-col gap-2 border-t border-sf-line pt-6 text-xs text-sf-muted sm:flex-row sm:items-center sm:justify-between">
           <p>{store.theme.footerText}</p>
-          <p>
-            Built on{" "}
-            <Link href="/" className="underline-offset-4 hover:underline">
-              Shopleb
+          {showBranding && (
+            <Link
+              href="/"
+              className="group inline-flex items-center gap-2 text-sm text-sf-muted transition-colors hover:text-sf-ink"
+            >
+              Built on
+              <span className="inline-flex items-center gap-1.5 font-semibold text-sf-ink">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 32 32"
+                  fill="none"
+                  aria-hidden
+                >
+                  <path
+                    d="M7 11 H25 L23.6 27 A2 2 0 0 1 21.6 28.8 H10.4 A2 2 0 0 1 8.4 27 Z"
+                    fill="#114b32"
+                  />
+                  <path
+                    d="M11 12 V9.5 A5 5 0 0 1 21 9.5 V12"
+                    stroke="#f6a35c"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                    fill="none"
+                  />
+                </svg>
+                Shopleb
+              </span>
             </Link>
-          </p>
+          )}
         </div>
       </div>
     </footer>

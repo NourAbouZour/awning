@@ -5,9 +5,9 @@ import {
   DashboardSidebar,
 } from "@/components/dashboard/sidebar";
 import { TrialBar } from "@/components/dashboard/trial-bar";
-import { getCurrentUser, getCurrentStore } from "@/lib/auth";
+import { getCurrentUser, getCurrentStore, getCurrentPlan } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { trialStatus, type Plan } from "@/lib/plan";
+import type { Plan } from "@/lib/plan";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -33,25 +33,42 @@ export default async function DashboardLayout({
     where: { storeId: store.id, read: false },
   });
 
+  const plan = await getCurrentPlan();
+  const owner = await prisma.user.findUnique({
+    where: { id: store.userId },
+    select: { requestedPlan: true },
+  });
+  const isOwner = store.userId === user.id;
+  // Arcade owners can switch between their stores.
+  const ownedStores = isOwner
+    ? await prisma.store.findMany({
+        where: { userId: user.id },
+        select: { id: true, name: true, slug: true },
+        orderBy: { createdAt: "asc" },
+      })
+    : [];
+
   const sidebarStore = {
+    id: store.id,
     name: store.name,
     slug: store.slug,
     brandColor: theme?.brandColor ?? "#114b32",
   };
-
-  const trial = trialStatus(store.createdAt);
+  const sidebarCtx = {
+    plan,
+    isOwner,
+    stores: ownedStores,
+  };
 
   return (
     <div className="flex min-h-dvh bg-canvas">
-      <DashboardSidebar store={sidebarStore} unread={unread} />
+      <DashboardSidebar store={sidebarStore} unread={unread} ctx={sidebarCtx} />
       <div className="flex min-w-0 flex-1 flex-col">
         <TrialBar
-          daysLeft={trial.daysLeft}
-          active={trial.active}
-          plan={user.plan as Plan}
-          billingPaid={user.billingPaid}
+          plan={plan}
+          requestedPlan={(owner?.requestedPlan as Plan | null) ?? null}
         />
-        <DashboardMobileBar store={sidebarStore} unread={unread} />
+        <DashboardMobileBar store={sidebarStore} unread={unread} ctx={sidebarCtx} />
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-6 md:py-8">
           {children}
         </main>

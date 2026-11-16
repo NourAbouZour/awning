@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { WHATSAPP_LINK } from "@/lib/contact";
 import {
   ArrowRight,
   BadgeCheck,
@@ -93,14 +94,14 @@ function Hero({ stores }: { stores: Store[] }) {
         <div className="relative animate-fade-up [animation-delay:150ms]">
           {secondary && (
             <div className="absolute -right-6 -top-6 hidden w-[76%] rotate-2 opacity-90 lg:block">
-              <BrowserFrame url={`${secondary.slug}.shopleb.shop`}>
+              <BrowserFrame url={`shopleb.com/s/${secondary.slug}`}>
                 <StorePreview store={secondary} />
               </BrowserFrame>
             </div>
           )}
           {primary && (
             <div className="relative lg:mt-24 lg:w-[88%]">
-              <BrowserFrame url={`${primary.slug}.shopleb.shop`}>
+              <BrowserFrame url={`shopleb.com/s/${primary.slug}`}>
                 <StorePreview store={primary} />
               </BrowserFrame>
             </div>
@@ -200,7 +201,7 @@ const features = [
   {
     icon: CreditCard,
     title: "Checkout that pays you directly",
-    body: "Stripe-powered checkout wired to your own account. Money lands with you, not in someone's escrow.",
+    body: "Customers pay you by Whish or cash on delivery. The money goes straight to you, Shopleb never holds it.",
     vignette: <CheckoutVignette />,
   },
   {
@@ -403,7 +404,7 @@ function ChartVignette() {
 const steps = [
   {
     title: "Name your store",
-    body: "Type a name, get your own address like yourshop.shopleb.shop, checked live.",
+    body: "Type a name, get your own address like shopleb.com/s/yourshop, checked live.",
   },
   {
     title: "Make it yours",
@@ -539,11 +540,11 @@ const faqs = [
   },
   {
     q: "How do I get paid?",
-    a: "You connect your own Stripe account during setup (it takes a couple of minutes). Customers pay by card at checkout and the money goes directly to you, Shopleb never holds your funds.",
+    a: "Your customers pay you directly, by Whish or in cash by hand when the order is delivered. There is nothing to connect, and Shopleb never holds your money. Your Shopleb subscription is paid the same way, by Whish or cash.",
   },
   {
     q: "Can I use my own domain name?",
-    a: "Every store gets a free address like yourshop.shopleb.shop the moment it goes live. Connecting a custom domain you already own is supported on paid plans.",
+    a: "Every store gets a free address like shopleb.com/s/yourshop the moment it goes live. Connecting a custom domain you already own is supported on paid plans.",
   },
   {
     q: "What does it cost to start?",
@@ -566,10 +567,12 @@ function Faq() {
           <p className="mt-4 text-ink-soft">
             Something else on your mind?{" "}
             <a
-              href="mailto:hello@shopleb.shop"
+              href={WHATSAPP_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
               className="font-medium text-green underline-offset-4 hover:underline"
             >
-              Write to us
+              Message us on WhatsApp
             </a>{" "}
             and a human replies.
           </p>

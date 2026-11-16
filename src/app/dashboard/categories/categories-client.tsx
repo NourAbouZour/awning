@@ -102,7 +102,7 @@ export function CategoriesClient({
         toast.error(res.error);
         return;
       }
-      toast.success(`"${cat.name}" deleted. Its products moved to another collection.`);
+      toast.success(`"${cat.name}" deleted. Its products have no collection now, so they are hidden until you pick one.`);
       router.refresh();
     });
   }

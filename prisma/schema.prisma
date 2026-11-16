@@ -21,6 +21,7 @@ enum ProductStatus {
 enum UserRole {
   merchant
   superadmin
+  staff
 }
 
 enum Plan {
@@ -30,6 +31,7 @@ enum Plan {
 }
 
 enum OrderStatus {
+  pending
   paid
   fulfilled
   shipped
@@ -37,16 +39,24 @@ enum OrderStatus {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  name         String
-  role         UserRole @default(merchant)
-  plan         Plan     @default(stall)
-  billingPaid  Boolean  @default(false)
-  active       Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  store        Store?
+  id              String          @id @default(cuid())
+  email           String          @unique
+  passwordHash    String
+  name            String
+  role            UserRole        @default(merchant)
+  plan            Plan            @default(stall)
+  billingPaid     Boolean         @default(false)
+  // A plan the merchant asked for; the platform owner approves it in /admin.
+  requestedPlan   Plan?
+  planRequestedAt DateTime?
+  active          Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  // Stores this user owns (Arcade can own several).
+  stores          Store[]         @relation("StoreOwner")
+  // Staff accounts belong to one store owned by someone else.
+  staffStoreId    String?
+  staffStore      Store?          @relation("StoreStaff", fields: [staffStoreId], references: [id], onDelete: Cascade)
+  passwordResets  PasswordReset[]
 }
 
 model SupportRequest {
@@ -60,26 +70,37 @@ model SupportRequest {
 }
 
 model Store {
-  id           String   @id @default(cuid())
-  userId       String   @unique
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name         String
-  slug         String   @unique
-  logoText     String
-  logoUrl      String?
-  tagline      String   @db.Text
-  contactEmail String
-  phone        String
-  address      String   @db.Text
-  city         String?
-  district     String?
-  mapsUrl      String?  @db.Text
-  hours        String   @db.Text
-  currency     String   @default("USD")
-  shippingNote String   @db.Text
-  freeShipping Decimal? @db.Decimal(10, 2)
+  id                 String   @id @default(cuid())
+  userId             String
+  user               User     @relation("StoreOwner", fields: [userId], references: [id], onDelete: Cascade)
+  name               String
+  slug               String   @unique
+  logoText           String
+  logoUrl            String?
+  tagline            String   @db.Text
+  contactEmail       String
+  phone              String
+  address            String   @db.Text
+  city               String?
+  district           String?
+  mapsUrl            String?  @db.Text
+  // Raw <iframe> embed code (or its src) pasted from Google Maps.
+  mapsEmbed          String?  @db.Text
+  hours              String   @db.Text
+  currency           String   @default("USD")
+  shippingNote       String   @db.Text
+  freeShipping       Decimal? @db.Decimal(10, 2)
   signupDiscountCode String?
-  createdAt    DateTime @default(now())
+  // Arcade: hide the "Built on Shopleb" footer credit.
+  hideBranding       Boolean  @default(false)
+  // Arcade: read-only REST API key and an order webhook.
+  apiKey             String?  @unique
+  webhookUrl         String?  @db.Text
+  createdAt          DateTime @default(now())
+
+  staff          User[]          @relation("StoreStaff")
+  discounts      Discount[]
+  abandonedCarts AbandonedCart[]
 
   theme       StoreTheme?
   categories  Category[]
@@ -112,27 +133,28 @@ model Campaign {
 }
 
 model StoreTheme {
-  id            String @id @default(cuid())
-  storeId       String @unique
-  store         Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  brandColor    String
-  fontPairing   String
-  announcement  String @db.Text
-  heroImage     String @db.Text
-  heroHeadline  String
-  heroSub       String @db.Text
-  heroCta       String
-  collectionsTitle String @default("Shop by collection")
-  storyImage    String @db.Text
-  storyTitle    String
-  storyBody     String @db.Text
-  newsletterTitle String @default("Be first to every drop")
-  newsletterBody  String @db.Text @default("Join the list for new releases and restocks. One or two emails a month, never more.")
-  footerText    String @db.Text
-  instagram     String?
-  tiktok        String?
-  twitter       String?
-  sections      Json // ordered [{ id, enabled }]
+  id               String  @id @default(cuid())
+  storeId          String  @unique
+  store            Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  brandColor       String
+  fontPairing      String
+  announcement     String  @db.Text
+  showAnnouncement Boolean @default(true)
+  heroImage        String  @db.Text
+  heroHeadline     String
+  heroSub          String  @db.Text
+  heroCta          String
+  collectionsTitle String  @default("Shop by collection")
+  storyImage       String  @db.Text
+  storyTitle       String
+  storyBody        String  @db.Text
+  newsletterTitle  String  @default("Be first to every drop")
+  newsletterBody   String  @default("Join the list for new releases and restocks. One or two emails a month, never more.") @db.Text
+  footerText       String  @db.Text
+  instagram        String?
+  tiktok           String?
+  twitter          String?
+  sections         Json // ordered [{ id, enabled }]
 }
 
 model Category {
@@ -157,14 +179,20 @@ model Product {
   details           String           @db.Text
   price             Decimal          @db.Decimal(10, 2)
   compareAt         Decimal?         @db.Decimal(10, 2)
-  categoryId        String
-  category          Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  // Optional: a product with no collection is hidden from the storefront.
+  categoryId        String?
+  category          Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   images            Json // string[]
   inventory         Int              @default(0)
   sku               String
   status            ProductStatus    @default(draft)
   featured          Boolean          @default(false)
   variantGroupLabel String?
+  // Arcade: SEO overrides and wholesale (B2B) pricing.
+  seoTitle          String?
+  seoDescription    String?          @db.Text
+  wholesalePrice    Decimal?         @db.Decimal(10, 2)
+  wholesaleMinQty   Int?
   createdAt         DateTime         @default(now())
   variants          ProductVariant[]
   orderItems        OrderItem[]
@@ -179,6 +207,8 @@ model ProductVariant {
   name      String
   price     Decimal? @db.Decimal(10, 2)
   stock     Int      @default(0)
+  // The variant whose price the shop cards show.
+  isDefault Boolean  @default(false)
 }
 
 model Customer {
@@ -186,7 +216,8 @@ model Customer {
   storeId      String
   store        Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
   name         String
-  email        String
+  email        String?
+  phone        String   @default("")
   location     String
   firstOrderAt DateTime @default(now())
   orders       Order[]
@@ -202,9 +233,16 @@ model Order {
   customerId      String
   customer        Customer    @relation(fields: [customerId], references: [id], onDelete: Restrict)
   customerName    String
-  customerEmail   String
+  customerEmail   String      @default("")
+  customerPhone   String      @default("")
+  // Google Maps link built from the customer's "Get my location".
+  locationUrl     String?     @db.Text
+  paymentMethod   String      @default("cash")
+  discountCode    String?
+  discountAmount  Decimal?    @db.Decimal(10, 2)
+  shippingFee     Decimal?    @db.Decimal(10, 2)
   total           Decimal     @db.Decimal(10, 2)
-  status          OrderStatus @default(paid)
+  status          OrderStatus @default(pending)
   shippingAddress String      @db.Text
   createdAt       DateTime    @default(now())
   items           OrderItem[]
@@ -235,4 +273,51 @@ model ContactMessage {
   body      String   @db.Text
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+// Shopfront+: discount codes customers enter at checkout.
+model Discount {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  code      String
+  // "percent" or "fixed"
+  kind      String   @default("percent")
+  value     Decimal  @db.Decimal(10, 2)
+  minTotal  Decimal? @db.Decimal(10, 2)
+  active    Boolean  @default(true)
+  uses      Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@unique([storeId, code])
+}
+
+// Shopfront+: checkouts that were started but never placed.
+model AbandonedCart {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name      String   @default("")
+  phone     String   @default("")
+  email     String   @default("")
+  items     Json // [{ productId, variantId?, title, variant?, quantity, price }]
+  subtotal  Decimal  @db.Decimal(10, 2)
+  recovered Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// A "forgot my password" request. The platform owner sees it in /admin and
+// generates a one-time code (valid 5 minutes) to pass on to the user.
+model PasswordReset {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash      String?
+  codeExpiresAt DateTime?
+  attempts      Int       @default(0)
+  usedAt        DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([userId])
 }

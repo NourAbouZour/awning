@@ -23,7 +23,7 @@ export function CustomersClient({
   const filtered = customers.filter(
     (c) =>
       !query ||
-      `${c.name} ${c.email} ${c.location}`
+      `${c.name} ${c.email} ${c.phone} ${c.location}`
         .toLowerCase()
         .includes(query.toLowerCase()),
   );
@@ -42,7 +42,7 @@ export function CustomersClient({
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by name, email, or city"
+              placeholder="Search by name, phone, email, or city"
               className="h-9 pl-9"
               aria-label="Search customers"
             />
@@ -82,7 +82,7 @@ export function CustomersClient({
                         {c.name}
                       </span>
                       <span className="block truncate text-xs text-ink-soft">
-                        {c.email} · {c.location}
+                        {[c.phone, c.email, c.location].filter(Boolean).join(" · ")}
                       </span>
                     </span>
                     <span className="hidden text-right sm:block">

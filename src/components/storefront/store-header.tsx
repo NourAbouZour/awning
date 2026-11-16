@@ -1,5 +1,6 @@
 "use client";
 
+import { cardPrice } from "@/lib/product";
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -36,6 +37,7 @@ export function StoreHeader() {
   const nav = [
     { href: base, label: "Home" },
     { href: `${base}/shop`, label: "Shop" },
+    { href: `${base}/track`, label: "Track my order" },
     { href: `${base}/contact`, label: "Contact" },
   ];
 
@@ -230,7 +232,7 @@ function SearchDialog({
                           {p.title}
                         </span>
                         <span className="block text-xs text-sf-muted">
-                          {formatMoney(p.price, store.currency)}
+                          {formatMoney(cardPrice(p), store.currency)}
                         </span>
                       </span>
                     </Link>

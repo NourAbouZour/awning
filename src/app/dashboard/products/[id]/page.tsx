@@ -6,7 +6,8 @@ import { ProductForm } from "@/components/dashboard/product-form";
 import { Button } from "@/components/ui/button";
 import { requireCurrentStore } from "@/lib/auth";
 import { getProductById } from "@/server/products";
-import { getStoreForUser } from "@/server/stores";
+import { getStoreById } from "@/server/stores";
+import { productFormFeatures } from "../form-features";
 
 export default async function EditProductPage({
   params,
@@ -17,8 +18,9 @@ export default async function EditProductPage({
   const store = await requireCurrentStore();
   const product = await getProductById(store.id, id);
   if (!product) notFound();
-  const full = await getStoreForUser(store.userId);
+  const full = await getStoreById(store.id);
   const categories = full?.categories ?? [];
+  const features = await productFormFeatures();
 
   return (
     <>
@@ -28,8 +30,15 @@ export default async function EditProductPage({
           Products
         </Link>
       </Button>
-      <PageHeader title={product.title} sub={`SKU ${product.sku}`} />
-      <ProductForm product={product} categories={categories} />
+      <PageHeader
+        title={product.title}
+        sub={product.sku ? `SKU ${product.sku}` : undefined}
+      />
+      <ProductForm
+        product={product}
+        categories={categories}
+        features={features}
+      />
     </>
   );
 }

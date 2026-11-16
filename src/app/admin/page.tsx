@@ -2,14 +2,23 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Card, PageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
-import { adminStats, listSupportRequests } from "@/server/admin";
+import {
+  adminStats,
+  listPasswordResets,
+  listPlanRequests,
+  listSupportRequests,
+} from "@/server/admin";
+import { PasswordResets } from "./password-resets";
+import { PlanRequests } from "./plan-requests";
 import { PLAN_LABELS } from "@/lib/plan";
 import { formatDateTime } from "@/lib/utils";
 
 export default async function AdminOverview() {
-  const [stats, support] = await Promise.all([
+  const [stats, support, planRequests, passwordResets] = await Promise.all([
     adminStats(),
     listSupportRequests(),
+    listPlanRequests(),
+    listPasswordResets(),
   ]);
   const recent = support.slice(0, 5);
 
@@ -23,6 +32,38 @@ export default async function AdminOverview() {
   return (
     <>
       <PageHeader title="Overview" sub="Your platform at a glance." />
+
+      <Card className="mb-5">
+        <div className="flex items-center justify-between px-5 pt-5">
+          <h2 className="text-sm font-semibold text-ink">
+            Plan requests
+            {planRequests.length > 0 && (
+              <span className="ml-2 rounded-full bg-warn px-2 py-0.5 text-[11px] font-semibold text-white">
+                {planRequests.length} waiting
+              </span>
+            )}
+          </h2>
+        </div>
+        <div className="mt-2">
+          <PlanRequests requests={planRequests} />
+        </div>
+      </Card>
+
+      <Card className="mb-5">
+        <div className="flex items-center justify-between px-5 pt-5">
+          <h2 className="text-sm font-semibold text-ink">
+            Forgot password
+            {passwordResets.length > 0 && (
+              <span className="ml-2 rounded-full bg-warn px-2 py-0.5 text-[11px] font-semibold text-white">
+                {passwordResets.length} waiting
+              </span>
+            )}
+          </h2>
+        </div>
+        <div className="mt-2">
+          <PasswordResets requests={passwordResets} />
+        </div>
+      </Card>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {tiles.map((t) => (

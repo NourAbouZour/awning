@@ -4,12 +4,14 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { ProductForm } from "@/components/dashboard/product-form";
 import { Button } from "@/components/ui/button";
 import { requireCurrentStore } from "@/lib/auth";
-import { getStoreForUser } from "@/server/stores";
+import { getStoreById } from "@/server/stores";
+import { productFormFeatures } from "../form-features";
 
 export default async function NewProductPage() {
   const store = await requireCurrentStore();
-  const full = await getStoreForUser(store.userId);
+  const full = await getStoreById(store.id);
   const categories = full?.categories ?? [];
+  const features = await productFormFeatures();
   return (
     <>
       <Button variant="ghost" size="sm" className="mb-3 -ml-2" asChild>
@@ -22,7 +24,7 @@ export default async function NewProductPage() {
         title="Add product"
         sub="It appears in your storefront the moment you set it active."
       />
-      <ProductForm categories={categories} />
+      <ProductForm categories={categories} features={features} />
     </>
   );
 }

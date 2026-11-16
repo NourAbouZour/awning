@@ -1,5 +1,6 @@
 "use client";
 
+import { cardPrice } from "@/lib/product";
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X } from "lucide-react";
@@ -30,7 +31,7 @@ export function ShopClient() {
   const initialCollection = searchParams.get("collection");
 
   const active = store.products.filter((p) => p.status === "active");
-  const maxPrice = Math.ceil(Math.max(...active.map((p) => p.price)) / 10) * 10;
+  const maxPrice = Math.ceil(Math.max(...active.map((p) => cardPrice(p))) / 10) * 10;
 
   const [collections, setCollections] = React.useState<Set<string>>(
     () =>
@@ -68,7 +69,7 @@ export function ShopClient() {
   const filtered = React.useMemo(() => {
     let list = active.filter((p) => {
       if (collections.size && !collections.has(p.categoryId)) return false;
-      if (p.price < price[0] || p.price > price[1]) return false;
+      if (cardPrice(p) < price[0] || cardPrice(p) > price[1]) return false;
       if (inStockOnly && p.inventory === 0) return false;
       if (options.size) {
         const names = p.variantGroup?.variants.map((v) => v.name) ?? [];
@@ -84,10 +85,10 @@ export function ShopClient() {
         );
         break;
       case "price-asc":
-        list = [...list].sort((a, b) => a.price - b.price);
+        list = [...list].sort((a, b) => cardPrice(a) - cardPrice(b));
         break;
       case "price-desc":
-        list = [...list].sort((a, b) => b.price - a.price);
+        list = [...list].sort((a, b) => cardPrice(b) - cardPrice(a));
         break;
       default:
         list = [...list].sort(

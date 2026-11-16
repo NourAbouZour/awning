@@ -21,6 +21,7 @@ const u = (id: string, w = 1400) =>
 /* ------------------------------------------------------------------ */
 
 export const voltaStore: Store = {
+  plan: "stall",
   id: "store_volta",
   name: "VOLTA",
   slug: "volta",
@@ -36,6 +37,7 @@ export const voltaStore: Store = {
     brandColor: "#f54a00",
     fontPairing: "bold",
     announcement: "Free shipping over $75, new drops every Friday",
+    showAnnouncement: true,
     heroImage: u("photo-1556906781-9a412961c28c", 2400),
     heroHeadline: "Built to move. Made to last.",
     heroSub: "Performance sneakers and streetwear, designed in San Francisco and worn everywhere.",
@@ -347,6 +349,7 @@ export const voltaStore: Store = {
 /* ------------------------------------------------------------------ */
 
 export const odeStore: Store = {
+  plan: "stall",
   id: "store_ode",
   name: "ODE Skin",
   slug: "ode",
@@ -362,6 +365,7 @@ export const odeStore: Store = {
     brandColor: "#4d5f4a",
     fontPairing: "editorial",
     announcement: "Complimentary shipping on orders over $50",
+    showAnnouncement: true,
     heroImage: u("photo-1556228453-efd6c1ff04f6", 2400),
     heroHeadline: "Three steps. Nothing you don't need.",
     heroSub: "Clinically-dosed botanicals in exactly the amounts your skin can use, made fresh monthly in Portland.",
@@ -638,26 +642,26 @@ export const currentStore = voltaStore;
 /* ------------------------------------------------------------------ */
 
 export const customers: Customer[] = [
-  { id: "c_01", name: "Maya Okafor", email: "maya.okafor@gmail.com", location: "Brooklyn, NY", ordersCount: 4, totalSpent: 512, firstOrderAt: "2026-04-11T00:00:00Z" },
-  { id: "c_02", name: "Daniel Reyes", email: "dreyes91@outlook.com", location: "Austin, TX", ordersCount: 2, totalSpent: 296, firstOrderAt: "2026-06-02T00:00:00Z" },
-  { id: "c_03", name: "Sofia Lindqvist", email: "sofia.lq@proton.me", location: "Seattle, WA", ordersCount: 6, totalSpent: 874, firstOrderAt: "2026-02-19T00:00:00Z" },
-  { id: "c_04", name: "Jordan Park", email: "jordan.park@gmail.com", location: "Chicago, IL", ordersCount: 1, totalSpent: 148, firstOrderAt: "2026-09-28T00:00:00Z" },
-  { id: "c_05", name: "Amara Diallo", email: "amara.d@yahoo.com", location: "Atlanta, GA", ordersCount: 3, totalSpent: 402, firstOrderAt: "2026-05-14T00:00:00Z" },
-  { id: "c_06", name: "Tom Becker", email: "t.becker@gmx.de", location: "Denver, CO", ordersCount: 2, totalSpent: 212, firstOrderAt: "2026-07-21T00:00:00Z" },
-  { id: "c_07", name: "Priya Natarajan", email: "priya.nat@gmail.com", location: "San Jose, CA", ordersCount: 5, totalSpent: 689, firstOrderAt: "2026-03-05T00:00:00Z" },
-  { id: "c_08", name: "Liam Gallagher", email: "liam.g.main@icloud.com", location: "Portland, OR", ordersCount: 1, totalSpent: 88, firstOrderAt: "2026-10-01T00:00:00Z" },
+  { id: "c_01", name: "Maya Okafor", email: "maya.okafor@gmail.com", phone: "", location: "Brooklyn, NY", ordersCount: 4, totalSpent: 512, firstOrderAt: "2026-04-11T00:00:00Z" },
+  { id: "c_02", name: "Daniel Reyes", email: "dreyes91@outlook.com", phone: "", location: "Austin, TX", ordersCount: 2, totalSpent: 296, firstOrderAt: "2026-06-02T00:00:00Z" },
+  { id: "c_03", name: "Sofia Lindqvist", email: "sofia.lq@proton.me", phone: "", location: "Seattle, WA", ordersCount: 6, totalSpent: 874, firstOrderAt: "2026-02-19T00:00:00Z" },
+  { id: "c_04", name: "Jordan Park", email: "jordan.park@gmail.com", phone: "", location: "Chicago, IL", ordersCount: 1, totalSpent: 148, firstOrderAt: "2026-09-28T00:00:00Z" },
+  { id: "c_05", name: "Amara Diallo", email: "amara.d@yahoo.com", phone: "", location: "Atlanta, GA", ordersCount: 3, totalSpent: 402, firstOrderAt: "2026-05-14T00:00:00Z" },
+  { id: "c_06", name: "Tom Becker", email: "t.becker@gmx.de", phone: "", location: "Denver, CO", ordersCount: 2, totalSpent: 212, firstOrderAt: "2026-07-21T00:00:00Z" },
+  { id: "c_07", name: "Priya Natarajan", email: "priya.nat@gmail.com", phone: "", location: "San Jose, CA", ordersCount: 5, totalSpent: 689, firstOrderAt: "2026-03-05T00:00:00Z" },
+  { id: "c_08", name: "Liam Gallagher", email: "liam.g.main@icloud.com", phone: "", location: "Portland, OR", ordersCount: 1, totalSpent: 88, firstOrderAt: "2026-10-01T00:00:00Z" },
 ];
 
 const img = (id: string) => u(id, 300);
 
 export const orders: Order[] = [
   {
-    id: "o_1042", number: "#1042", customerId: "c_04", customerName: "Jordan Park", customerEmail: "jordan.park@gmail.com",
+    id: "o_1042", number: "#1042", customerId: "c_04", customerName: "Jordan Park", customerEmail: "jordan.park@gmail.com", customerPhone: "", paymentMethod: "cash",
     items: [{ productId: "p_volta_01", title: "Circuit Runner, Ember", image: img("photo-1542291026-7eec264c27ff"), variant: "US 10", quantity: 1, price: 148 }],
     total: 148, status: "paid", createdAt: "2026-10-06T08:42:00Z", shippingAddress: "1510 N Damen Ave, Chicago, IL 60622",
   },
   {
-    id: "o_1041", number: "#1041", customerId: "c_03", customerName: "Sofia Lindqvist", customerEmail: "sofia.lq@proton.me",
+    id: "o_1041", number: "#1041", customerId: "c_03", customerName: "Sofia Lindqvist", customerEmail: "sofia.lq@proton.me", customerPhone: "", paymentMethod: "cash",
     items: [
       { productId: "p_volta_08", title: "Heavyweight Hoodie, Ash", image: img("photo-1556821840-3a63f95609a7"), variant: "M", quantity: 1, price: 88 },
       { productId: "p_volta_12", title: "Studio Sock, 3-Pack", image: img("photo-1586350977771-b3b0abd50c82"), quantity: 2, price: 24 },
@@ -665,12 +669,12 @@ export const orders: Order[] = [
     total: 136, status: "paid", createdAt: "2026-10-05T19:15:00Z", shippingAddress: "4021 Stone Way N, Seattle, WA 98103",
   },
   {
-    id: "o_1040", number: "#1040", customerId: "c_01", customerName: "Maya Okafor", customerEmail: "maya.okafor@gmail.com",
+    id: "o_1040", number: "#1040", customerId: "c_01", customerName: "Maya Okafor", customerEmail: "maya.okafor@gmail.com", customerPhone: "", paymentMethod: "cash",
     items: [{ productId: "p_volta_05", title: "Volt High, Citrus", image: img("photo-1560769629-975ec94e6a86"), variant: "US 9", quantity: 1, price: 172 }],
     total: 172, status: "fulfilled", createdAt: "2026-10-05T11:03:00Z", shippingAddress: "233 Greene Ave, Brooklyn, NY 11238",
   },
   {
-    id: "o_1039", number: "#1039", customerId: "c_07", customerName: "Priya Natarajan", customerEmail: "priya.nat@gmail.com",
+    id: "o_1039", number: "#1039", customerId: "c_07", customerName: "Priya Natarajan", customerEmail: "priya.nat@gmail.com", customerPhone: "", paymentMethod: "cash",
     items: [
       { productId: "p_volta_02", title: "Court Classic, White", image: img("photo-1595950653106-6c9ebd614d3a"), variant: "US 8", quantity: 1, price: 118 },
       { productId: "p_volta_09", title: "Everyday Tee, Cloud", image: img("photo-1521572163474-6864f9cf17ab"), variant: "M", quantity: 2, price: 38 },
@@ -678,17 +682,17 @@ export const orders: Order[] = [
     total: 194, status: "shipped", createdAt: "2026-10-04T16:48:00Z", shippingAddress: "88 S 4th St, San Jose, CA 95112",
   },
   {
-    id: "o_1038", number: "#1038", customerId: "c_05", customerName: "Amara Diallo", customerEmail: "amara.d@yahoo.com",
+    id: "o_1038", number: "#1038", customerId: "c_05", customerName: "Amara Diallo", customerEmail: "amara.d@yahoo.com", customerPhone: "", paymentMethod: "cash",
     items: [{ productId: "p_volta_11", title: "Transit Backpack", image: img("photo-1553062407-98eeb64c6a62"), quantity: 1, price: 124 }],
     total: 124, status: "shipped", createdAt: "2026-10-03T09:27:00Z", shippingAddress: "671 Edgewood Ave SE, Atlanta, GA 30312",
   },
   {
-    id: "o_1037", number: "#1037", customerId: "c_08", customerName: "Liam Gallagher", customerEmail: "liam.g.main@icloud.com",
+    id: "o_1037", number: "#1037", customerId: "c_08", customerName: "Liam Gallagher", customerEmail: "liam.g.main@icloud.com", customerPhone: "", paymentMethod: "cash",
     items: [{ productId: "p_volta_08", title: "Heavyweight Hoodie, Ash", image: img("photo-1556821840-3a63f95609a7"), variant: "L", quantity: 1, price: 88 }],
     total: 88, status: "fulfilled", createdAt: "2026-10-02T14:12:00Z", shippingAddress: "2134 SE Division St, Portland, OR 97202",
   },
   {
-    id: "o_1036", number: "#1036", customerId: "c_02", customerName: "Daniel Reyes", customerEmail: "dreyes91@outlook.com",
+    id: "o_1036", number: "#1036", customerId: "c_02", customerName: "Daniel Reyes", customerEmail: "dreyes91@outlook.com", customerPhone: "", paymentMethod: "cash",
     items: [
       { productId: "p_volta_03", title: "Apex Trail, Storm", image: img("photo-1606107557195-0e29a4b5b4aa"), variant: "US 11", quantity: 1, price: 164 },
       { productId: "p_volta_10", title: "Track Cap, Black", image: img("photo-1588850561407-ed78c282e89b"), quantity: 1, price: 32 },
@@ -696,17 +700,17 @@ export const orders: Order[] = [
     total: 196, status: "shipped", createdAt: "2026-10-01T20:55:00Z", shippingAddress: "1804 E 6th St, Austin, TX 78702",
   },
   {
-    id: "o_1035", number: "#1035", customerId: "c_06", customerName: "Tom Becker", customerEmail: "t.becker@gmx.de",
+    id: "o_1035", number: "#1035", customerId: "c_06", customerName: "Tom Becker", customerEmail: "t.becker@gmx.de", customerPhone: "", paymentMethod: "cash",
     items: [{ productId: "p_volta_04", title: "Midnight Runner, Black", image: img("photo-1512374382149-233c42b6a83b"), variant: "US 11", quantity: 1, price: 152 }],
     total: 152, status: "cancelled", createdAt: "2026-09-30T10:31:00Z", shippingAddress: "950 Lincoln St, Denver, CO 80203",
   },
   {
-    id: "o_1034", number: "#1034", customerId: "c_03", customerName: "Sofia Lindqvist", customerEmail: "sofia.lq@proton.me",
+    id: "o_1034", number: "#1034", customerId: "c_03", customerName: "Sofia Lindqvist", customerEmail: "sofia.lq@proton.me", customerPhone: "", paymentMethod: "cash",
     items: [{ productId: "p_volta_01", title: "Circuit Runner, Ember", image: img("photo-1542291026-7eec264c27ff"), variant: "US 8", quantity: 1, price: 148 }],
     total: 148, status: "fulfilled", createdAt: "2026-09-29T13:08:00Z", shippingAddress: "4021 Stone Way N, Seattle, WA 98103",
   },
   {
-    id: "o_1033", number: "#1033", customerId: "c_01", customerName: "Maya Okafor", customerEmail: "maya.okafor@gmail.com",
+    id: "o_1033", number: "#1033", customerId: "c_01", customerName: "Maya Okafor", customerEmail: "maya.okafor@gmail.com", customerPhone: "", paymentMethod: "cash",
     items: [
       { productId: "p_volta_06", title: "Aurora Low, Rose", image: img("photo-1603808033192-082d6919d3e1"), variant: "US 7", quantity: 1, price: 126 },
       { productId: "p_volta_12", title: "Studio Sock, 3-Pack", image: img("photo-1586350977771-b3b0abd50c82"), quantity: 1, price: 24 },

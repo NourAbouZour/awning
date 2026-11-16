@@ -11,7 +11,8 @@ export type HomeSectionId =
   | "carousel"
   | "story"
   | "trust"
-  | "newsletter";
+  | "newsletter"
+  | "map";
 
 export interface HomeSection {
   id: HomeSectionId;
@@ -22,6 +23,7 @@ export interface StoreTheme {
   brandColor: string;
   fontPairing: FontPairingId;
   announcement: string;
+  showAnnouncement: boolean;
   heroImage: string;
   heroHeadline: string;
   heroSub: string;
@@ -50,6 +52,7 @@ export interface ProductVariant {
   name: string; // e.g. "US 9" or "50ml"
   price?: number; // overrides product price when set
   stock: number;
+  isDefault?: boolean; // its price is the one shown on shop cards
 }
 
 export interface VariantGroup {
@@ -66,8 +69,13 @@ export interface Product {
   price: number;
   compareAt?: number;
   images: string[];
+  /** Empty when the product has no collection (it is then hidden from the shop). */
   categoryId: string;
   variantGroup?: VariantGroup;
+  seoTitle?: string;
+  seoDescription?: string;
+  wholesalePrice?: number;
+  wholesaleMinQty?: number;
   inventory: number;
   sku: string;
   status: "active" | "draft";
@@ -95,17 +103,26 @@ export interface Store {
   city?: string;
   district?: string;
   mapsUrl?: string;
+  mapsEmbed?: string;
   hours: string;
   currency: string;
   shippingNote: string;
   freeShipping?: number;
   signupDiscountCode?: string;
+  hideBranding?: boolean;
+  /** The owner's plan, so the storefront can switch paid features on. */
+  plan: "stall" | "shopfront" | "arcade";
   theme: StoreTheme;
   categories: Category[];
   products: Product[];
 }
 
-export type OrderStatus = "paid" | "fulfilled" | "shipped" | "cancelled";
+export type OrderStatus =
+  | "pending"
+  | "paid"
+  | "fulfilled"
+  | "shipped"
+  | "cancelled";
 
 export interface OrderItem {
   productId: string;
@@ -122,6 +139,12 @@ export interface Order {
   customerId: string;
   customerName: string;
   customerEmail: string;
+  customerPhone: string;
+  locationUrl?: string;
+  paymentMethod: string;
+  discountCode?: string;
+  discountAmount?: number;
+  shippingFee?: number;
   items: OrderItem[];
   total: number;
   status: OrderStatus;
@@ -133,6 +156,7 @@ export interface Customer {
   id: string;
   name: string;
   email: string;
+  phone: string;
   location: string;
   ordersCount: number;
   totalSpent: number;

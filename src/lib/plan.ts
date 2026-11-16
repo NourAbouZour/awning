@@ -1,10 +1,7 @@
-// Free-plan rules. No billing backend yet, so the trial is informational and
-// the product limit is the real constraint. Pure + unit-tested.
+// Plan rules. The free Stall plan is free forever and capped by product
+// count; paid plans unlock features. Pure + unit-tested.
 
 export const FREE_PRODUCT_LIMIT = 5;
-export const TRIAL_DAYS = 30;
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 export type Plan = "stall" | "shopfront" | "arcade";
 
@@ -19,25 +16,53 @@ export function productLimit(plan: Plan): number {
   return plan === "stall" ? FREE_PRODUCT_LIMIT : Infinity;
 }
 
+/** Features unlocked by each paid plan. Arcade includes everything in Shopfront. */
+export type Feature =
+  | "customDomain"
+  | "discounts"
+  | "emailMarketing"
+  | "abandonedCart"
+  | "upsell"
+  | "multiStore"
+  | "staff"
+  | "analytics"
+  | "wholesale"
+  | "aiSeo"
+  | "removeBranding"
+  | "api";
+
+const SHOPFRONT_FEATURES: Feature[] = [
+  "customDomain",
+  "discounts",
+  "emailMarketing",
+  "abandonedCart",
+  "upsell",
+];
+
+const ARCADE_FEATURES: Feature[] = [
+  ...SHOPFRONT_FEATURES,
+  "multiStore",
+  "staff",
+  "analytics",
+  "wholesale",
+  "aiSeo",
+  "removeBranding",
+  "api",
+];
+
+/** The cheapest plan that includes a feature. */
+export function planFor(feature: Feature): Plan {
+  return SHOPFRONT_FEATURES.includes(feature) ? "shopfront" : "arcade";
+}
+
+/** Whether a plan includes a feature. */
+export function hasFeature(plan: Plan, feature: Feature): boolean {
+  if (plan === "arcade") return ARCADE_FEATURES.includes(feature);
+  if (plan === "shopfront") return SHOPFRONT_FEATURES.includes(feature);
+  return false;
+}
+
 /** True once the catalog has reached the plan's product limit. */
 export function limitReached(count: number, plan: Plan): boolean {
   return count >= productLimit(plan);
-}
-
-export interface TrialStatus {
-  /** Whole days remaining in the trial (0 once it has ended). */
-  daysLeft: number;
-  /** Whether the trial window is still open. */
-  active: boolean;
-  /** When the free month ends. */
-  endsAt: Date;
-}
-
-/** The trial state for a store/account created at `createdAt`. */
-export function trialStatus(createdAt: Date, now: Date = new Date()): TrialStatus {
-  const endsAt = new Date(createdAt.getTime() + TRIAL_DAYS * DAY_MS);
-  const remainingMs = endsAt.getTime() - now.getTime();
-  const active = remainingMs > 0;
-  const daysLeft = active ? Math.ceil(remainingMs / DAY_MS) : 0;
-  return { daysLeft, active, endsAt };
 }

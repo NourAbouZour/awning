@@ -1,10 +1,10 @@
 import { requireCurrentStore } from "@/lib/auth";
-import { getStoreForUser } from "@/server/stores";
+import { getStoreById } from "@/server/stores";
 import { CategoriesClient } from "./categories-client";
 
 export default async function CategoriesPage() {
   const store = await requireCurrentStore();
-  const full = await getStoreForUser(store.userId);
+  const full = await getStoreById(store.id);
   const categories = full?.categories ?? [];
   const products = full?.products ?? [];
   const counts: Record<string, number> = {};

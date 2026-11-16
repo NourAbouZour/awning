@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { requireCurrentStore } from "@/lib/auth";
+import { requireCurrentStore, assertFeature } from "@/lib/auth";
 import { sendCampaignEmail } from "@/lib/mailer";
 import { listSubscribers } from "@/server/email";
 
@@ -20,6 +20,7 @@ export async function sendCampaign(
   }
 
   try {
+    await assertFeature("emailMarketing");
     await sendCampaignEmail(emails, subject.trim(), body.trim(), store.name);
   } catch (e) {
     return {

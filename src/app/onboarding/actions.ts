@@ -2,7 +2,9 @@
 
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { cookies } from "next/headers";
+import { getCurrentUser, ACTIVE_STORE_COOKIE } from "@/lib/auth";
+import { hasFeature, type Plan } from "@/lib/plan";
 import { slugify } from "@/lib/utils";
 import type { HomeSection } from "@/lib/types";
 
@@ -16,6 +18,8 @@ export interface CreateStoreInput {
   heroHeadline: string;
   heroSub: string;
   discountCode?: string;
+  /** Arcade: open an additional store instead of returning the existing one. */
+  additional?: boolean;
   productTitle?: string;
   productPrice?: string;
   productImage?: string;
@@ -63,11 +67,18 @@ export async function createStore(
   const user = await getCurrentUser();
   if (!user) return { error: "Please log in again." };
 
-  const existing = await prisma.store.findUnique({
+  if (user.role === "staff")
+    return { error: "Staff accounts can't open a store." };
+
+  const existing = await prisma.store.findFirst({
     where: { userId: user.id },
     select: { slug: true },
+    orderBy: { createdAt: "asc" },
   });
-  if (existing) return { slug: existing.slug, alreadyExists: true };
+  const canAddMore =
+    !!input.additional && hasFeature(user.plan as Plan, "multiStore");
+  if (existing && !canAddMore)
+    return { slug: existing.slug, alreadyExists: true };
 
   if (input.name.trim().length < 2)
     return { error: "Your store needs a name." };
@@ -77,7 +88,7 @@ export async function createStore(
 
   const price = Number(input.productPrice);
 
-  await prisma.store.create({
+  const created = await prisma.store.create({
     data: {
       userId: user.id,
       name: input.name.trim(),
@@ -90,7 +101,8 @@ export async function createStore(
       address: "",
       hours: "",
       currency: "USD",
-      shippingNote: "Flat $8 shipping. Free over $75.",
+      shippingNote: "Free shipping on orders over $50.",
+      freeShipping: new Prisma.Decimal(50),
       signupDiscountCode: input.discountCode?.trim() || null,
       theme: {
         create: {
@@ -148,6 +160,16 @@ export async function createStore(
       });
     }
   }
+
+  // Point the dashboard at the store that was just opened.
+  const jar = await cookies();
+  jar.set(ACTIVE_STORE_COOKIE, created.id, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+  });
 
   return { slug };
 }

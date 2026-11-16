@@ -2,9 +2,7 @@ import { MessageCircle } from "lucide-react";
 import { Card } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
 
-const WHATSAPP_NUMBER = "96176075491";
-const WHATSAPP_DISPLAY = "+961 76 075 491";
-const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}`;
+import { WHATSAPP_DISPLAY, WHATSAPP_LINK } from "@/lib/contact";
 
 /**
  * A reusable "talk to the developer" card with a WhatsApp call-to-action.

@@ -6,7 +6,9 @@ import { SESSION_COOKIE, verifySession } from "@/lib/session";
 // keeps signed-in merchants out of the auth screens.
 
 const PROTECTED = ["/dashboard", "/onboarding", "/admin"];
-const AUTH_PAGES = ["/login", "/signup"];
+// Signed-in visitors skip signup. /login always shows the login form, so
+// "Log in" never drops someone into store setup.
+const AUTH_PAGES = ["/signup"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

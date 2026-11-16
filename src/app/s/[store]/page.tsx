@@ -1,7 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowRight, Lock, RefreshCcw, Truck } from "lucide-react";
+import { ArrowRight, Banknote, MapPin, Navigation, RefreshCcw, Truck } from "lucide-react";
+import { directionsUrl, mapEmbedSrc } from "@/lib/maps";
 import { NewsletterForm } from "@/components/storefront/newsletter-form";
 import { ProductCarousel } from "@/components/storefront/product-carousel";
 import { getStoreBySlug } from "@/server/stores";
@@ -35,6 +36,7 @@ export default async function StoreHomePage({
     story: <Story key="story" store={store} />,
     trust: <Trust key="trust" store={store} />,
     newsletter: <Newsletter key="newsletter" store={store} />,
+    map: <StoreMap key="map" store={store} />,
   };
 
   return (
@@ -175,25 +177,30 @@ function Story({ store }: { store: Store }) {
 }
 
 function Trust({ store }: { store: Store }) {
-  const freeShipBody =
-    store.freeShipping && store.freeShipping > 0
-      ? `On every order over ${formatMoney(store.freeShipping, store.currency)}.`
-      : store.shippingNote.split(".")[0] + ".";
+  const hasFreeShipping = !!store.freeShipping && store.freeShipping > 0;
   const items = [
-    {
-      icon: Truck,
-      title: "Free shipping",
-      body: freeShipBody,
-    },
+    hasFreeShipping
+      ? {
+          icon: Truck,
+          title: "Free shipping",
+          body: `On every order over ${formatMoney(store.freeShipping as number, store.currency)}.`,
+        }
+      : {
+          icon: Truck,
+          title: "Delivery",
+          body:
+            store.shippingNote.trim() ||
+            "Delivered to your door. The store confirms the details with you.",
+        },
     {
       icon: RefreshCcw,
       title: "Easy returns",
       body: "Changed your mind? Send it back, no forms, no fuss.",
     },
     {
-      icon: Lock,
-      title: "Secure checkout",
-      body: "Payments handled by Stripe. We never see your card.",
+      icon: Banknote,
+      title: "Pay your way",
+      body: "Cash on delivery or Whish. No card needed.",
     },
   ];
   return (
@@ -212,6 +219,63 @@ function Trust({ store }: { store: Store }) {
             </div>
           </div>
         ))}
+      </div>
+    </section>
+  );
+}
+
+function StoreMap({ store }: { store: Store }) {
+  const embed = mapEmbedSrc(store);
+  const directions = directionsUrl(store);
+  // Nothing to show until the owner adds a map or an address.
+  if (!embed && !directions) return null;
+  const addressLine = [store.address, store.district, store.city]
+    .filter(Boolean)
+    .join(", ");
+  return (
+    <section className="mx-auto max-w-7xl px-5 py-16 md:px-8 md:py-24">
+      <div className="grid items-stretch gap-8 lg:grid-cols-[1fr_1.6fr]">
+        <div className="flex flex-col justify-center">
+          <h2 className="sf-display text-3xl md:text-4xl">Find us</h2>
+          {addressLine && (
+            <p className="mt-4 flex items-start gap-2.5 text-sf-muted">
+              <MapPin className="mt-1 size-4 shrink-0" />
+              {addressLine}
+            </p>
+          )}
+          {directions && (
+            <a
+              href={directions}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-7 inline-flex w-fit items-center gap-2.5 rounded-full bg-sf-brand px-7 py-4 text-sm font-semibold text-sf-on-brand transition-colors hover:bg-sf-brand-hover"
+            >
+              <Navigation className="size-4" />
+              Get directions
+            </a>
+          )}
+        </div>
+        {embed ? (
+          <div className="overflow-hidden rounded-2xl border border-sf-line bg-sf-wash">
+            <iframe
+              src={embed}
+              title={`Map showing ${store.name}`}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+              className="block h-80 w-full border-0 md:h-[26rem]"
+            />
+          </div>
+        ) : (
+          <a
+            href={directions ?? "#"}
+            target="_blank"
+            rel="noreferrer"
+            className="flex min-h-56 items-center justify-center rounded-2xl border border-sf-line bg-sf-wash text-sm font-medium underline-offset-4 hover:underline"
+          >
+            Open in Google Maps
+          </a>
+        )}
       </div>
     </section>
   );

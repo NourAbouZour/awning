@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import {
   FREE_PRODUCT_LIMIT,
-  TRIAL_DAYS,
-  trialStatus,
   limitReached,
   productLimit,
+  hasFeature,
+  planFor,
 } from "./plan";
 
 describe("productLimit", () => {
@@ -26,26 +26,23 @@ describe("limitReached", () => {
   });
 });
 
-describe("trialStatus", () => {
-  const created = new Date("2026-01-01T00:00:00Z");
-
-  it("is active with full days left on day zero", () => {
-    const s = trialStatus(created, created);
-    expect(s.active).toBe(true);
-    expect(s.daysLeft).toBe(TRIAL_DAYS);
+describe("hasFeature", () => {
+  it("gives Stall no paid features", () => {
+    expect(hasFeature("stall", "discounts")).toBe(false);
+    expect(hasFeature("stall", "api")).toBe(false);
   });
-
-  it("counts down while inside the trial window", () => {
-    const now = new Date("2026-01-25T00:00:00Z"); // 24 days in
-    const s = trialStatus(created, now);
-    expect(s.active).toBe(true);
-    expect(s.daysLeft).toBe(6);
+  it("gives Shopfront its own features but not Arcade's", () => {
+    expect(hasFeature("shopfront", "discounts")).toBe(true);
+    expect(hasFeature("shopfront", "abandonedCart")).toBe(true);
+    expect(hasFeature("shopfront", "staff")).toBe(false);
   });
-
-  it("is ended with zero days left after the window", () => {
-    const now = new Date("2026-03-01T00:00:00Z");
-    const s = trialStatus(created, now);
-    expect(s.active).toBe(false);
-    expect(s.daysLeft).toBe(0);
+  it("gives Arcade everything", () => {
+    expect(hasFeature("arcade", "discounts")).toBe(true);
+    expect(hasFeature("arcade", "staff")).toBe(true);
+    expect(hasFeature("arcade", "api")).toBe(true);
+  });
+  it("names the cheapest plan for a feature", () => {
+    expect(planFor("upsell")).toBe("shopfront");
+    expect(planFor("wholesale")).toBe("arcade");
   });
 });

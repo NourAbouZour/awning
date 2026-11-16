@@ -16,7 +16,7 @@ const tiers = [
     features: [
       "Full storefront & checkout",
       "Up to 5 products",
-      "yourshop.shopleb.shop address",
+      "shopleb.com/s/yourshop address",
       "Orders, customers & messages",
     ],
   },

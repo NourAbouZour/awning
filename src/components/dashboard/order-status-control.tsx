@@ -3,7 +3,11 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { OrderStatusBadge } from "@/components/dashboard/status-badge";
+import {
+  ORDER_STAGES,
+  OrderStatusBadge,
+  orderStage,
+} from "@/components/dashboard/status-badge";
 import {
   Select,
   SelectContent,
@@ -13,42 +17,40 @@ import {
 import { updateOrderStatus } from "@/app/dashboard/orders/actions";
 import type { OrderStatus } from "@/lib/types";
 
-const FLOW: { value: OrderStatus; label: string; hint: string }[] = [
-  { value: "paid", label: "Paid", hint: "Payment received, not yet packed" },
-  { value: "fulfilled", label: "Fulfilled", hint: "Packed and ready to ship" },
-  { value: "shipped", label: "Shipped", hint: "On its way to the customer" },
-  { value: "cancelled", label: "Cancelled", hint: "Refunded and closed" },
-];
-
 export function OrderStatusControl({
   orderId,
   orderNumber,
   initial,
+  onChanged,
 }: {
   orderId: string;
   orderNumber: string;
   initial: OrderStatus;
+  /** Called after the new status is saved. */
+  onChanged?: (status: OrderStatus) => void;
 }) {
   const router = useRouter();
   const [status, setStatus] = React.useState<OrderStatus>(initial);
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex flex-wrap items-center gap-3">
       <OrderStatusBadge status={status} />
       <Select
         value={status}
         onValueChange={(v) => {
           const prev = status;
-          setStatus(v as OrderStatus);
+          const next = v as OrderStatus;
+          setStatus(next);
           React.startTransition(async () => {
-            const res = await updateOrderStatus(orderId, v as OrderStatus);
+            const res = await updateOrderStatus(orderId, next);
             if (res.error) {
               setStatus(prev);
               toast.error(res.error);
             } else {
               toast.success(
-                `${orderNumber} marked ${FLOW.find((f) => f.value === v)?.label.toLowerCase()}`,
+                `${orderNumber} marked ${orderStage(next).label.toLowerCase()}`,
               );
+              onChanged?.(next);
               router.refresh();
             }
           });
@@ -58,7 +60,7 @@ export function OrderStatusControl({
           <span className="text-[13px]">Change status…</span>
         </SelectTrigger>
         <SelectContent>
-          {FLOW.map((f) => (
+          {ORDER_STAGES.map((f) => (
             <SelectItem key={f.value} value={f.value}>
               <span className="block">{f.label}</span>
               <span className="block text-xs text-ink-soft">{f.hint}</span>

@@ -5,5 +5,5 @@ import { OrdersClient } from "./orders-client";
 export default async function OrdersPage() {
   const store = await requireCurrentStore();
   const orders = await listOrders(store.id);
-  return <OrdersClient orders={orders} />;
+  return <OrdersClient orders={orders} currency={store.currency} />;
 }
