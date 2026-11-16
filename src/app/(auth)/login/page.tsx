@@ -17,6 +17,16 @@ import {
 
 type Mode = "login" | "forgot" | "code";
 
+/** Hand the typed email to the signup form without putting it in the URL. */
+function rememberSignupEmail(email?: string) {
+  if (!email) return;
+  try {
+    sessionStorage.setItem("sl_signup_email", email);
+  } catch {
+    // Storage can be blocked; the user just types the email again.
+  }
+}
+
 function ErrorNote({ message }: { message?: string }) {
   if (!message) return null;
   return (
@@ -116,6 +126,25 @@ function LoginForm({
           </p>
         )}
         <ErrorNote message={state.error} />
+        {state.noAccount && (
+          <div
+            role="alert"
+            className="rounded-lg border border-warn/30 bg-warn-wash px-3 py-2.5 text-sm text-ink-body"
+          >
+            <p>
+              There is no account on{" "}
+              <span className="font-medium text-ink">{state.noAccount}</span>.
+              Do you want to create one?
+            </p>
+            <Link
+              href="/signup"
+              onClick={() => rememberSignupEmail(state.noAccount)}
+              className="mt-1.5 inline-block font-medium text-green underline-offset-4 hover:underline"
+            >
+              Yes, create my account
+            </Link>
+          </div>
+        )}
         <div className="space-y-1.5">
           <Label htmlFor="email">Email</Label>
           <Input

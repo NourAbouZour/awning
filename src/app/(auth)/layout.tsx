@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AwningLogo } from "@/components/awning-logo";
+import { SignedInNote } from "./signed-in-note";
 
 export default function AuthLayout({
   children,
@@ -14,7 +15,10 @@ export default function AuthLayout({
           <AwningLogo />
         </Link>
         <div className="flex flex-1 items-center justify-center py-10">
-          <div className="w-full max-w-sm">{children}</div>
+          <div className="w-full max-w-sm">
+            <SignedInNote />
+            {children}
+          </div>
         </div>
       </div>
 

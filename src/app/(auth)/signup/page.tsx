@@ -15,6 +15,20 @@ export default function SignupPage() {
     {},
   );
 
+  // Coming from "there is no account on this email": fill it in for them.
+  const emailRef = React.useRef<HTMLInputElement>(null);
+  React.useEffect(() => {
+    try {
+      const handed = sessionStorage.getItem("sl_signup_email");
+      if (handed && emailRef.current && !emailRef.current.value) {
+        emailRef.current.value = handed;
+      }
+      sessionStorage.removeItem("sl_signup_email");
+    } catch {
+      // Storage can be blocked; nothing to prefill.
+    }
+  }, []);
+
   return (
     <div className="animate-fade-up">
       <h1 className="font-display text-3xl font-bold tracking-tight text-ink">
@@ -52,6 +66,7 @@ export default function SignupPage() {
             type="email"
             autoComplete="email"
             placeholder="alex@example.com"
+            ref={emailRef}
             required
           />
         </div>

@@ -11,6 +11,8 @@ import {
 
 export interface AuthState {
   error?: string;
+  /** Login only: nobody has an account with this email. */
+  noAccount?: string;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -27,8 +29,11 @@ export async function login(
   }
 
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user || !(await verifyPassword(password, user.passwordHash))) {
-    return { error: "Email or password is incorrect." };
+  if (!user) return { noAccount: email };
+  if (!(await verifyPassword(password, user.passwordHash))) {
+    return {
+      error: 'That password isn\'t right. Try again, or press "Forgot it?".',
+    };
   }
   if (!user.active) {
     return { error: "Your account is suspended, please contact support." };

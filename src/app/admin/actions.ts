@@ -185,3 +185,20 @@ export async function deleteMerchantAccount(
   for (const s of target.stores) revalidatePath(`/s/${s.slug}`, "layout");
   return {};
 }
+
+/** Delete one enquiry from the admin Messages page for good. */
+export async function deleteSupportRequest(id: string): Promise<void> {
+  await requireSuperadmin();
+  await prisma.supportRequest.deleteMany({ where: { id } });
+  revalidatePath("/admin", "layout");
+}
+
+/** Delete every enquiry already marked as handled. */
+export async function deleteHandledSupportRequests(): Promise<number> {
+  await requireSuperadmin();
+  const res = await prisma.supportRequest.deleteMany({
+    where: { handled: true },
+  });
+  revalidatePath("/admin", "layout");
+  return res.count;
+}

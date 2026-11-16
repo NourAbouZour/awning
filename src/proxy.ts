@@ -2,13 +2,11 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySession } from "@/lib/session";
 
-// Next.js 16 renamed `middleware` to `proxy`. Guards the merchant area and
-// keeps signed-in merchants out of the auth screens.
+// Next.js 16 renamed `middleware` to `proxy`. Guards the merchant area.
+// /login and /signup always show their forms, even to someone logged in, so
+// "Log in" and "Open your shop free" never skip straight into store setup.
 
 const PROTECTED = ["/dashboard", "/onboarding", "/admin"];
-// Signed-in visitors skip signup. /login always shows the login form, so
-// "Log in" never drops someone into store setup.
-const AUTH_PAGES = ["/signup"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -18,16 +16,11 @@ export async function proxy(request: NextRequest) {
   const isProtected = PROTECTED.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`),
   );
-  const isAuthPage = AUTH_PAGES.some((p) => pathname === p);
 
   if (isProtected && !session) {
-    const url = new URL("/login", request.url);
-    return NextResponse.redirect(url);
-  }
-
-  if (isAuthPage && session) {
-    const url = new URL("/dashboard", request.url);
-    return NextResponse.redirect(url);
+    // Building a store starts with an account: sign up (or log in) first.
+    const to = pathname.startsWith("/onboarding") ? "/signup" : "/login";
+    return NextResponse.redirect(new URL(to, request.url));
   }
 
   return NextResponse.next();
@@ -38,7 +31,5 @@ export const config = {
     "/dashboard/:path*",
     "/onboarding",
     "/admin/:path*",
-    "/login",
-    "/signup",
   ],
 };
